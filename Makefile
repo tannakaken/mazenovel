@@ -1,0 +1,2 @@
+new:
+	perl new.pl
