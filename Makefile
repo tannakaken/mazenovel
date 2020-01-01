@@ -6,8 +6,8 @@ all: index tree
 
 .PHONY: index
 index: public/index.html
-public/index.html: src/Hello.elm
-	elm make src/Hello.elm --output public/index.html
+public/index.html: src/Main.elm
+	elm make src/Main.elm --output public/index.html
 
 .PHONY: tree
 tree: public/tree.json
@@ -17,3 +17,5 @@ public/tree.json: $(NOVELS)
 new:
 	perl new.pl
 
+serve:
+	php -S localhost:8000 -t public/
