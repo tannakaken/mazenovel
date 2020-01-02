@@ -6,6 +6,7 @@ import Html exposing (Html, text, pre)
 import Url
 import Http
 import Json.Decode exposing (..)
+import Array exposing (Array , get)
 
 -- MAIN
 
@@ -61,22 +62,18 @@ schemeAndAuthority url =
 
 -- UPDATE
 
-type alias NovelMaze =
-  { node : Maybe String
-  , next : Maybe Choices
-  }
+type alias NovelMaze = Array NovelNode
 
-type Choices = Choices (List NovelMaze)
+type alias NovelNode =
+  { node : Maybe String
+  , next : Array Int
+  }
 
 jsonDecoder : Decoder NovelMaze
 jsonDecoder =
-  map2 NovelMaze
-       (field "node" (nullable string))
-       (maybe (field "next" (lazy (\_ -> choicesDecoder))))
-
-choicesDecoder : Decoder Choices
-choicesDecoder =
-  map Choices (list jsonDecoder)
+  array (map2 NovelNode
+          (field "node" (nullable string))
+          (field "next" (array int)))
 
 type Msg
   = LinkClicked Browser.UrlRequest
@@ -97,7 +94,9 @@ update msg model =
     GotJson result ->
       case result of
         Ok novelMaze ->
-          ({model | state = Success (Maybe.withDefault "null" novelMaze.node)}, Cmd.none)
+          case get 1 novelMaze of
+            Nothing -> ({model | state = Failure "empty json"}, Cmd.none)
+            Just head -> ({model | state = Success (Maybe.withDefault "null" head.node)}, Cmd.none)
         Err err ->
           ({model | state = Failure (errorToString err)}, Cmd.none)
 
