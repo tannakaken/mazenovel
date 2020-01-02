@@ -28,7 +28,7 @@ type alias Model =
   }
 
 type State
-  = Failure
+  = Failure String
   | Loading
   | Success String
 
@@ -98,8 +98,16 @@ update msg model =
       case result of
         Ok novelMaze ->
           ({model | state = Success (Maybe.withDefault "null" novelMaze.node)}, Cmd.none)
-        Err _ ->
-          ({model | state = Failure}, Cmd.none)
+        Err err ->
+          ({model | state = Failure (errorToString err)}, Cmd.none)
+
+errorToString err =
+  case err of
+    Http.BadUrl url -> "urlがおかしいです"
+    Http.Timeout -> "タイムアウトが発生しました"
+    Http.NetworkError -> "ネットワークがおかしいです"
+    Http.BadStatus _ -> "ステータスがおかしいです"
+    Http.BadBody message -> message
 
 -- SUBSCRIPTION
 subscriptions : Model -> Sub Msg
@@ -112,8 +120,8 @@ view model =
   { title = "迷路小説"
   , body = 
     [ case model.state of
-        Failure ->
-          text "データのロードに失敗しました。"
+        Failure errorMessage ->
+          text ("データのロードに失敗しました:" ++ errorMessage)
         Loading ->
           text "loading..."
         Success fullText ->
