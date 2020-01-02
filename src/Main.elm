@@ -1,10 +1,11 @@
-module Main exposing (main)
+module Main exposing (..)
 
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, text, pre)
 import Url
 import Http
+import Json.Decode exposing (..)
 
 -- MAIN
 
@@ -36,7 +37,7 @@ init _ url key =
   ( Model key url Loading
   , Http.get
     { url = jsonUrl url
-    , expect = Http.expectString GotText
+    , expect = Http.expectJson GotJson jsonDecoder
     }
   )
 
@@ -57,15 +58,30 @@ schemeAndAuthority url =
         Just portNum -> ":" ++ (String.fromInt portNum)
   in
     scheme ++ host ++ portString ++ "/"  
-    
-
 
 -- UPDATE
+
+type alias NovelMaze =
+  { node : Maybe String
+  , next : Maybe Choices
+  }
+
+type Choices = Choices (List NovelMaze)
+
+jsonDecoder : Decoder NovelMaze
+jsonDecoder =
+  map2 NovelMaze
+       (field "node" (nullable string))
+       (maybe (field "next" (lazy (\_ -> choicesDecoder))))
+
+choicesDecoder : Decoder Choices
+choicesDecoder =
+  map Choices (list jsonDecoder)
 
 type Msg
   = LinkClicked Browser.UrlRequest
   | UrlChanged Url.Url
-  | GotText (Result Http.Error String)
+  | GotJson (Result Http.Error NovelMaze)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -78,10 +94,10 @@ update msg model =
           (model, Nav.load href)
     UrlChanged url ->
       ({ model | url = url }, Cmd.none)
-    GotText result ->
+    GotJson result ->
       case result of
-        Ok fullText ->
-          ({model | state = Success fullText}, Cmd.none)
+        Ok novelMaze ->
+          ({model | state = Success (Maybe.withDefault "null" novelMaze.node)}, Cmd.none)
         Err _ ->
           ({model | state = Failure}, Cmd.none)
 
@@ -97,7 +113,7 @@ view model =
   , body = 
     [ case model.state of
         Failure ->
-          text "I was unable to load your book."
+          text "データのロードに失敗しました。"
         Loading ->
           text "loading..."
         Success fullText ->

@@ -8,11 +8,16 @@ novels.each do |file|
     line = f.readline.strip
     line.each_char do |c|
       if tail.has_key? :next  then
+        passed = false
         tail[:next].each do |branch|
           if branch[:node] == c then
             tail = branch
+            passed = true
             break
           end
+        end
+        if passed
+          next
         end
         next_tail = {node: c}
         tail[:next].push next_tail
