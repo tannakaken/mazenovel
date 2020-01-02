@@ -6,7 +6,8 @@ import Html exposing (Html, text, pre)
 import Url
 import Http
 import Json.Decode exposing (..)
-import Array exposing (Array , get)
+import Array exposing (Array , get, foldr, length)
+import Random
 
 -- MAIN
 
@@ -31,7 +32,15 @@ type alias Model =
 type State
   = Failure String
   | Loading
-  | Success String
+  | Success NovelMaze
+  
+type alias NovelMaze = Array NovelNode
+
+type alias NovelNode =
+  { node : Maybe String
+  , next : Array Int
+  }
+
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url key =
@@ -62,13 +71,6 @@ schemeAndAuthority url =
 
 -- UPDATE
 
-type alias NovelMaze = Array NovelNode
-
-type alias NovelNode =
-  { node : Maybe String
-  , next : Array Int
-  }
-
 jsonDecoder : Decoder NovelMaze
 jsonDecoder =
   array (map2 NovelNode
@@ -94,9 +96,7 @@ update msg model =
     GotJson result ->
       case result of
         Ok novelMaze ->
-          case get 1 novelMaze of
-            Nothing -> ({model | state = Failure "empty json"}, Cmd.none)
-            Just head -> ({model | state = Success (Maybe.withDefault "null" head.node)}, Cmd.none)
+          ({model | state = Success novelMaze}, Cmd.none)
         Err err ->
           ({model | state = Failure (errorToString err)}, Cmd.none)
 
@@ -123,9 +123,31 @@ view model =
           text ("データのロードに失敗しました:" ++ errorMessage)
         Loading ->
           text "loading..."
-        Success fullText ->
-          pre [] [ text fullText ]
+        Success novelMaze ->
+          randomNovel novelMaze |> text
     ]
   }
 
+randomNovel : NovelMaze -> String
+randomNovel novelMaze = randomNovelAux novelMaze 0
+
+randomNovelAux : NovelMaze -> Int -> String
+randomNovelAux novelMaze currentIndex =
+  let 
+    currentNode = get currentIndex novelMaze
+  in
+    case currentNode of
+      Nothing -> ""
+      Just node ->
+        (case node.node of
+          Nothing -> ""
+          Just c -> c)
+        ++
+        (if length node.next == 0 
+         then "" 
+         else 
+           let
+             nextIndex = (Maybe.withDefault 0 (get 0 node.next))
+           in
+             randomNovelAux novelMaze nextIndex)
 
