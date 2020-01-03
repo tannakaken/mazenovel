@@ -8,6 +8,8 @@ import Http
 import Json.Decode exposing (..)
 import Array exposing (Array , get, foldr, length)
 import Random
+import Task
+import Time
 
 -- MAIN
 
@@ -45,11 +47,8 @@ type alias NovelNode =
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url key =
-  ( Model key url Loading (Random.initialSeed 43)
-  , Http.get
-    { url = jsonUrl url
-    , expect = Http.expectJson GotJson jsonDecoder
-    }
+  ( Model key url Loading (Random.initialSeed 0)
+  , Task.perform GotTime Time.now
   )
 
 jsonUrl : Url.Url -> String
@@ -81,6 +80,7 @@ jsonDecoder =
 type Msg
   = LinkClicked Browser.UrlRequest
   | UrlChanged Url.Url
+  | GotTime Time.Posix
   | GotJson (Result Http.Error NovelMaze)
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -94,6 +94,12 @@ update msg model =
           (model, Nav.load href)
     UrlChanged url ->
       ({ model | url = url }, Cmd.none)
+    GotTime posix ->
+      ({ model | seed = Random.initialSeed (Time.posixToMillis posix) }
+      , Http.get
+          { url = jsonUrl model.url
+          , expect = Http.expectJson GotJson jsonDecoder
+          })
     GotJson result ->
       case result of
         Ok novelMaze ->
