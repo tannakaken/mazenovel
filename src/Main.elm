@@ -27,6 +27,7 @@ type alias Model =
   { key : Nav.Key
   , url : Url.Url
   , state : State
+  , seed : Random.Seed
   }
 
 type State
@@ -44,7 +45,7 @@ type alias NovelNode =
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url key =
-  ( Model key url Loading
+  ( Model key url Loading (Random.initialSeed 43)
   , Http.get
     { url = jsonUrl url
     , expect = Http.expectJson GotJson jsonDecoder
@@ -124,15 +125,15 @@ view model =
         Loading ->
           text "loading..."
         Success novelMaze ->
-          randomNovel novelMaze |> text
+          randomNovel model.seed novelMaze |> text
     ]
   }
 
-randomNovel : NovelMaze -> String
-randomNovel novelMaze = randomNovelAux novelMaze 0
+randomNovel : Random.Seed -> NovelMaze -> String
+randomNovel seed novelMaze = randomNovelAux seed novelMaze 0
 
-randomNovelAux : NovelMaze -> Int -> String
-randomNovelAux novelMaze currentIndex =
+randomNovelAux : Random.Seed -> NovelMaze -> Int -> String
+randomNovelAux seed novelMaze currentIndex =
   let 
     currentNode = get currentIndex novelMaze
   in
@@ -147,7 +148,10 @@ randomNovelAux novelMaze currentIndex =
          then "" 
          else 
            let
-             nextIndex = (Maybe.withDefault 0 (get 0 node.next))
+             length = Array.length node.next
+             indexGenerator = Random.int 0 (length - 1)
+             (index, nextSeed) = Random.step indexGenerator seed
+             nextIndex = (Maybe.withDefault 0 (get index node.next))
            in
-             randomNovelAux novelMaze nextIndex)
+             randomNovelAux nextSeed novelMaze nextIndex)
 
