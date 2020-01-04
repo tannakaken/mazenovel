@@ -4,8 +4,12 @@ import Browser
 import Browser.Navigation as Nav
 import Html exposing (Html, text, pre)
 import Url
+import Url.Parser as UP
+import Url.Parser exposing (Parser, query, s)
+import Url.Parser.Query as Q
 import Http
-import Json.Decode exposing (..)
+import Json.Decode as JD
+import Json.Decode exposing (Decoder)
 import Array exposing (Array , get, foldr, length)
 import Random
 import Task
@@ -44,12 +48,41 @@ type alias NovelNode =
   , next : Array Int
   }
 
+-- INIT
+
+type Route
+  = Top (Maybe Int)
+
+routeParser : Parser (Route -> a) a
+routeParser =
+  UP.oneOf
+    [ UP.map Top (query <| Q.int "seed") ]
+
+urlToRoute : Url.Url -> Maybe Route
+urlToRoute url = Url.Parser.parse routeParser url
 
 init : () -> Url.Url -> Nav.Key -> (Model, Cmd Msg)
 init _ url key =
-  ( Model key url Loading (Random.initialSeed 0)
-  , Task.perform GotTime Time.now
-  )
+  case urlToRoute url of
+    Nothing -> 
+      ( Model key url Loading (Random.initialSeed 0)
+      , Task.perform GotTime Time.now
+      )
+    Just (Top maybeSeed) ->
+      case maybeSeed of
+        Nothing ->
+          ( Model key url Loading (Random.initialSeed 0)
+          , Task.perform GotTime Time.now
+          )
+        Just seed ->
+          ( Model key url Loading (Random.initialSeed seed)
+          , Http.get
+            { url = jsonUrl url
+            , expect = Http.expectJson GotJson jsonDecoder
+            }
+          )
+
+-- JSON
 
 jsonUrl : Url.Url -> String
 jsonUrl url = schemeAndAuthority url ++ "tree.json"
@@ -73,9 +106,9 @@ schemeAndAuthority url =
 
 jsonDecoder : Decoder NovelMaze
 jsonDecoder =
-  array (map2 NovelNode
-          (field "node" (nullable string))
-          (field "next" (array int)))
+  JD.array (JD.map2 NovelNode
+             (JD.field "node" (JD.nullable JD.string))
+             (JD.field "next" (JD.array JD.int)))
 
 type Msg
   = LinkClicked Browser.UrlRequest
