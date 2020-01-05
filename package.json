@@ -1,0 +1,21 @@
+{
+  "name": "mazenovel",
+  "version": "1.0.0",
+  "description": "web app that making maze from novels",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tannakaken/mazenovel.git"
+  },
+  "keywords": [
+    "maze",
+    "elm"
+  ],
+  "author": "Tannakian Cat <tannakaken@gmail.com> (https://github.com/tannakaken/)",
+  "license": "CC-BY-SA-4.0",
+  "devDependencies": {
+    "elm-test": "^0.19.1-revision2"
+  }
+}

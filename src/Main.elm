@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
@@ -193,4 +193,5 @@ randomNovelAux seed novelMaze currentIndex =
              nextIndex = (Maybe.withDefault 0 (get index node.next))
            in
              randomNovelAux nextSeed novelMaze nextIndex)
+
 
