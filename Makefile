@@ -7,7 +7,7 @@ all: index tree
 .PHONY: index
 index: public/index.html
 public/index.html: src/Main.elm
-	elm make src/Main.elm --output public/index.html
+	npx elm make src/Main.elm --output public/index.html
 
 .PHONY: tree
 tree: public/tree.json
