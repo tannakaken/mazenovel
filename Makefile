@@ -2,12 +2,12 @@ NOVELDIR := novels
 NOVELS := $(wildcard $(NOVELDIR)/novel*.txt)
 
 .PHONY: all
-all: index tree
+all: main tree
 
 .PHONY: index
-index: public/index.html
-public/index.html: src/Main.elm
-	npx elm make src/Main.elm --output public/index.html
+main: public/elm.js
+public/elm.js: src/Main.elm
+	npx elm make src/Main.elm --output public/elm.js
 
 .PHONY: tree
 tree: public/tree.json

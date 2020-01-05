@@ -1,5 +1,5 @@
 node_modules/
 elm-stuff/
-public/index.html
+public/elm.js
 public/tree.json
 */.DS_Store

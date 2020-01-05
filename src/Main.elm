@@ -74,7 +74,7 @@ routeParser =
 
 urlToRoute : Url.Url -> Maybe Route
 urlToRoute url =
-    Url.Parser.parse routeParser url
+    UP.parse routeParser url
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
