@@ -19,3 +19,7 @@ new:
 
 serve:
 	php -S localhost:8000 -t public/
+
+.PHONY: test
+test:
+	npx elm-test
