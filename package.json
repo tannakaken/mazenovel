@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "web app that making maze from novels",
   "scripts": {
-    "test": "npx elm-test"
+    "test": "npx elm-test",
+    "check-format": "npx elm-format . --validate"
   },
   "repository": {
     "type": "git",
@@ -16,6 +17,7 @@
   "author": "Tannakian Cat <tannakaken@gmail.com> (https://github.com/tannakaken/)",
   "license": "CC-BY-SA-4.0",
   "devDependencies": {
+    "elm-format": "^0.8.2",
     "elm-test": "^0.19.1-revision2"
   },
   "dependencies": {

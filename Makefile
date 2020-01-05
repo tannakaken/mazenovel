@@ -23,3 +23,7 @@ serve:
 .PHONY: test
 test:
 	npx elm-test
+
+.PHONY: format
+format:
+	npx elm-format . --yes

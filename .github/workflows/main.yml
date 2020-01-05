@@ -16,5 +16,7 @@ jobs:
       uses: actions/setup-node@v1
     - name: Install Dependencies
       run: npm install
+    - name: Check format
+      run: npm check-format
     - name: Run test
       run: npm test
