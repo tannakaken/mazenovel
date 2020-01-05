@@ -17,6 +17,6 @@ jobs:
     - name: Install Dependencies
       run: npm install
     - name: Check format
-      run: npm check-format
+      run: npm run nheck-format
     - name: Run test
       run: npm test
