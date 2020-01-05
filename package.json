@@ -17,5 +17,8 @@
   "license": "CC-BY-SA-4.0",
   "devDependencies": {
     "elm-test": "^0.19.1-revision2"
+  },
+  "dependencies": {
+    "elm": "^0.19.1-3"
   }
 }
