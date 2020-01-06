@@ -6272,7 +6272,14 @@ var $author$project$Main$jsonDecoder = $elm$json$Json$Decode$array(
 			$elm$json$Json$Decode$field,
 			'next',
 			$elm$json$Json$Decode$array($elm$json$Json$Decode$int))));
-var $author$project$Main$schemeAndAuthority = function (url) {
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $author$project$Main$baseUrl = function (url) {
 	var scheme = function () {
 		var _v1 = url.protocol;
 		if (_v1.$ === 'Https') {
@@ -6291,10 +6298,16 @@ var $author$project$Main$schemeAndAuthority = function (url) {
 		}
 	}();
 	var host = url.host;
-	return scheme + (host + (portString + '/'));
+	return _Utils_ap(
+		scheme,
+		_Utils_ap(
+			host,
+			_Utils_ap(
+				portString,
+				A3($elm$core$String$replace, 'index.html', '', url.path))));
 };
 var $author$project$Main$jsonUrl = function (url) {
-	return $author$project$Main$schemeAndAuthority(url) + 'tree.json';
+	return $author$project$Main$baseUrl(url) + 'tree.json';
 };
 var $elm$time$Time$Name = function (a) {
 	return {$: 'Name', a: a};
