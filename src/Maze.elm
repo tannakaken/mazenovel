@@ -2,8 +2,8 @@ module Maze exposing (..)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Set exposing (Set)
 import Random
+import Set exposing (Set)
 
 
 type alias Cell =
