@@ -1,0 +1,14 @@
+npm run check-format
+status=$?
+if [ $status -ne 0 ]; then
+  echo "checking format failed"
+  exit $status
+fi
+make test
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo "test failed"
+  exit $status
+fi
+
