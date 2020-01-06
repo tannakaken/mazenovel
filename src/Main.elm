@@ -132,7 +132,8 @@ baseUrl url =
                 Just portNum ->
                     ":" ++ String.fromInt portNum
     in
-    scheme ++ host ++ portString ++ (String.replace "index.html" "" url.path)
+    scheme ++ host ++ portString ++ String.replace "index.html" "" url.path
+
 
 
 -- UPDATE
