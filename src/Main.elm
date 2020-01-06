@@ -107,11 +107,11 @@ init _ url key =
 
 jsonUrl : Url.Url -> String
 jsonUrl url =
-    schemeAndAuthority url ++ "tree.json"
+    baseUrl url ++ "tree.json"
 
 
-schemeAndAuthority : Url.Url -> String
-schemeAndAuthority url =
+baseUrl : Url.Url -> String
+baseUrl url =
     let
         scheme =
             case url.protocol of
@@ -132,8 +132,7 @@ schemeAndAuthority url =
                 Just portNum ->
                     ":" ++ String.fromInt portNum
     in
-    scheme ++ host ++ portString ++ "/"
-
+    scheme ++ host ++ portString ++ (String.replace "index.html" "" url.path)
 
 
 -- UPDATE
