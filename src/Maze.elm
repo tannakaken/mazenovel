@@ -32,7 +32,7 @@ randomPathAux novel maze currentCell =
 
 vonNeumannNeighborhood : Cell -> Set Cell
 vonNeumannNeighborhood cell =
-    Set.empty
+    Set.fromList [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
 
 canDig : Cell -> Cell -> Maze -> Bool
