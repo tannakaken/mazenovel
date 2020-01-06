@@ -2,6 +2,7 @@ module Maze exposing (..)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Set exposing (Set)
 import Random
 
 
@@ -29,9 +30,9 @@ randomPathAux novel maze currentCell =
     Dict.empty
 
 
-vonNeumannNeighborhood : Cell -> Array Cell
+vonNeumannNeighborhood : Cell -> Set Cell
 vonNeumannNeighborhood cell =
-    Array.empty
+    Set.empty
 
 
 canDig : Cell -> Cell -> Maze -> Bool

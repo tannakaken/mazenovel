@@ -4,17 +4,20 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 
+import Set
+
+import Maze
 
 suite : Test
 suite =
-    describe "The String module"
-        [ describe "String.reverse"
-            [ test "has no effect on a palindrome" <|
+    describe "The Maze module"
+        [ describe "Maze.vonNeumannNeighborhood"
+            [ test "return up down right left cell" <|
                 \_ ->
                     let
-                        palindrome =
-                            "hannah"
+                        neigborhood = Maze.vonNeumannNeighborhood (0,0)
+                        expected = Set.fromList [(1, 0), (-1, 0), (0, 1), (0, -1)]
                     in
-                    Expect.equal palindrome (String.reverse palindrome)
+                    Expect.equal neigborhood expected
             ]
         ]
