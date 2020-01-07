@@ -14,6 +14,16 @@ type alias Maze =
     Dict Cell String
 
 
+empty : Maze
+empty =
+    Dict.empty
+
+
+insert : Cell -> String -> Maze -> Maze
+insert cell c maze =
+    Dict.insert cell c maze
+
+
 {-| 文字列から迷路の一本道を作る
 |
 -}
@@ -39,6 +49,36 @@ vonNeumannNeighborhood cell =
     Set.fromList [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
 
 
-canDig : Cell -> Cell -> Maze -> Bool
-canDig cell previousCell maze =
-    False
+{-| 迷路のセルが掘って道にできるかどうかを返す。
+迷路のセルが掘れるのは、エリア内の新しい道であり、新しい交差点を作らないとき、すなわち次の場合である。
+
+  - その道がエリア内、つまりy座標が0以上
+  - 既に掘られて道になっていない
+  - 既に掘られて道になっているセルで一つ前のセルでないセルと隣接していない
+
+-}
+canDig : Maze -> Cell -> Cell -> Bool
+canDig maze previousCell cell =
+    inArea cell && (not <| inPath maze cell) && (not <| adjacentPath maze cell previousCell)
+
+
+inArea : Cell -> Bool
+inArea ( x, y ) =
+    y >= 0
+
+
+inPath : Maze -> Cell -> Bool
+inPath maze cell =
+    Dict.member cell maze
+
+
+adjacentPath : Maze -> Cell -> Cell -> Bool
+adjacentPath maze previousCell cell =
+    let
+        neighborhood =
+            vonNeumannNeighborhood cell
+
+        neighborhoodWithoutPrevious =
+            Set.remove previousCell neighborhood
+    in
+    Set.filter (inPath maze) neighborhoodWithoutPrevious |> Set.isEmpty |> not

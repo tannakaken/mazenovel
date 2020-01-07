@@ -1,5 +1,6 @@
 module MazeTest exposing (..)
 
+import Dict
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, tuple)
 import Maze
@@ -7,19 +8,31 @@ import Set
 import Test exposing (..)
 
 
+sampleMaze : List Maze.Cell -> Maze.Maze
+sampleMaze cells =
+    case cells of
+        [] ->
+            Dict.empty
+
+        head :: rest ->
+            Dict.insert head "a" <| sampleMaze rest
+
+
 suite : Test
 suite =
     describe "The Maze module"
-        [ describe "Maze.vonNeumannNeighborhood"
-            [ fuzz (tuple ( int, int )) "return up dorn right left cell of arbitary point" <|
-                \( x, y ) ->
-                    let
-                        neigborhood =
-                            Maze.vonNeumannNeighborhood ( x, y )
-
-                        expected =
-                            Set.fromList [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
-                    in
-                    Expect.equal neigborhood expected
+        [ describe "Maze.canDig"
+            [ test "can dig cell if it make new path and does not make new intersection" <|
+                \_ ->
+                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 0, 0 ) ( 0, 1 ) |> Expect.true "expected that can dig"
+            , test "can not dig cell out of area" <|
+                \_ ->
+                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 0, 0 ) ( 0, -1 ) |> Expect.false "expected that can not dig"
+            , test "can not dig cell in maze path" <|
+                \_ ->
+                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 1, 0 ) ( 0, 0 ) |> Expect.false "expected that can not dig"
+            , test "can not dig cell adjacent to maze path" <|
+                \_ ->
+                    Maze.canDig (sampleMaze [ ( 0, 0 ), ( 0, 1 ), ( 1, 1 ) ]) ( 1, 1 ) ( 1, 0 ) |> Expect.false "expected that can not dig"
             ]
         ]
