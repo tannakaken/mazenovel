@@ -165,7 +165,7 @@ vonNeumannNeighborhood cell =
 -}
 canDig : Maze -> Cell -> Cell -> Bool
 canDig maze previousCell cell =
-    inArea cell && (not <| onExistingPath maze cell) && makeSinglePath maze cell previousCell
+    inArea cell && (not <| onExistingPath maze cell) && doesBecomeSinglePath maze previousCell cell
 
 
 inArea : Cell -> Bool
@@ -178,8 +178,8 @@ onExistingPath maze cell =
     Dict.member cell maze
 
 
-makeSinglePath : Maze -> Cell -> Cell -> Bool
-makeSinglePath maze previousCell cell =
+doesBecomeSinglePath : Maze -> Cell -> Cell -> Bool
+doesBecomeSinglePath maze previousCell cell =
     let
         neighborhood =
             vonNeumannNeighborhood cell
