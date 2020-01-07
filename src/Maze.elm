@@ -35,20 +35,20 @@ choose (Chooser chooser) cells =
 
 get : Int -> List a -> Maybe a
 get nth list =
-    list |> List.drop (nth - 1) |> List.head
+    list |> List.drop nth |> List.head
 
 
 randomChooser : Random.Seed -> Chooser
 randomChooser seed =
     let
         chooser =
-            \cellset ->
+            \set ->
                 let
-                    celllist =
-                        Set.toList cellset
+                    list =
+                        Set.toList set
 
                     length =
-                        Set.size cellset
+                        Set.size set
                 in
                 if length == 0 then
                     Nothing
@@ -61,15 +61,15 @@ randomChooser seed =
                         ( index, nextSeed ) =
                             Random.step indexGenerator seed
 
-                        maybeCell =
-                            get index celllist
+                        maybe =
+                            get index list
                     in
-                    case maybeCell of
+                    case maybe of
                         Nothing ->
                             Nothing
 
-                        Just cell ->
-                            Just ( cell, randomChooser nextSeed )
+                        Just x ->
+                            Just ( x, randomChooser nextSeed )
     in
     Chooser chooser
 
