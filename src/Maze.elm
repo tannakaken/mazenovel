@@ -24,20 +24,115 @@ insert cell c maze =
     Dict.insert cell c maze
 
 
+type Chooser
+    = Chooser (Set Cell -> Maybe ( Cell, Chooser ))
+
+
+choose : Chooser -> Set Cell -> Maybe ( Cell, Chooser )
+choose (Chooser chooser) cells =
+    chooser cells
+
+
+get : Int -> List a -> Maybe a
+get nth list =
+    list |> List.drop (nth - 1) |> List.head
+
+
+randomChooser : Random.Seed -> Chooser
+randomChooser seed =
+    let
+        chooser =
+            \cellset ->
+                let
+                    celllist =
+                        Set.toList cellset
+
+                    length =
+                        Set.size cellset
+                in
+                if length == 0 then
+                    Nothing
+
+                else
+                    let
+                        indexGenerator =
+                            Random.int 0 (length - 1)
+
+                        ( index, nextSeed ) =
+                            Random.step indexGenerator seed
+
+                        maybeCell =
+                            get index celllist
+                    in
+                    case maybeCell of
+                        Nothing ->
+                            Nothing
+
+                        Just cell ->
+                            Just ( cell, randomChooser nextSeed )
+    in
+    Chooser chooser
+
+
 {-| 文字列から迷路の一本道を作る
-|
 -}
-randomPath : String -> Maze
-randomPath novel =
-    randomPathAux novel Dict.empty ( 0, 0 )
+randomPath : Chooser -> String -> Maybe Maze
+randomPath chooser novel =
+    randomPathAux chooser novel Dict.empty Set.empty ( 0, 0 )
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
-|
 -}
-randomPathAux : String -> Maze -> Cell -> Maze
-randomPathAux novel maze currentCell =
-    Dict.empty
+randomPathAux : Chooser -> String -> Maze -> Set Cell -> Cell -> Maybe Maze
+randomPathAux chooser novel maze exceptions currentCell =
+    if String.length novel == 0 then
+        Just maze
+
+    else
+        let
+            maybeNextCell =
+                chooseNextCell chooser maze exceptions currentCell
+        in
+        case maybeNextCell of
+            Nothing ->
+                Nothing
+
+            Just ( nextCell, nextChooser ) ->
+                let
+                    c =
+                        String.left 1 novel
+
+                    rest =
+                        String.dropLeft 1 novel
+
+                    nextMaze =
+                        insert nextCell c maze
+
+                    result =
+                        randomPathAux nextChooser rest nextMaze Set.empty nextCell
+                in
+                case result of
+                    Nothing ->
+                        randomPathAux chooser novel maze (Set.insert nextCell exceptions) currentCell
+
+                    _ ->
+                        result
+
+
+{-| 既に作られた迷路と現在のセルから次のセルをChooserを使って選べたなら選ぶ
+-}
+chooseNextCell : Chooser -> Maze -> Set Cell -> Cell -> Maybe ( Cell, Chooser )
+chooseNextCell chooser maze exceptions currentCell =
+    choiceOfNextCell maze exceptions currentCell |> choose chooser
+
+
+choiceOfNextCell : Maze -> Set Cell -> Cell -> Set Cell
+choiceOfNextCell maze exceptions currentCell =
+    vonNeumannNeighborhood currentCell
+        |> (\set ->
+                Set.diff set exceptions
+                    |> Set.filter (\cell -> canDig maze currentCell cell)
+           )
 
 
 vonNeumannNeighborhood : Cell -> Set Cell

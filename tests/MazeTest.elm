@@ -21,7 +21,19 @@ sampleMaze cells =
 suite : Test
 suite =
     describe "The Maze module"
-        [ describe "Maze.canDig"
+        [ describe "Maze.choiceOfNextCell"
+            [ test "choice of next cell" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.choiceOfNextCell (sampleMaze [ ( 0, 0 ) ]) Set.empty ( 0, 0 ))
+                        (Set.fromList [ ( 1, 0 ), ( -1, 0 ), ( 0, 1 ) ])
+            , test "exceptions of next cell" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.choiceOfNextCell (sampleMaze [ ( 0, 0 ) ]) (Set.fromList [ ( 0, 1 ) ]) ( 0, 0 ))
+                        (Set.fromList [ ( 1, 0 ), ( -1, 0 ) ])
+            ]
+        , describe "Maze.canDig"
             [ test "can dig cell if it make new path and does not make new intersection" <|
                 \_ ->
                     Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 0, 0 ) ( 0, 1 ) |> Expect.true "expected that can dig"
