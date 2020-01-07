@@ -59,7 +59,7 @@ vonNeumannNeighborhood cell =
 -}
 canDig : Maze -> Cell -> Cell -> Bool
 canDig maze previousCell cell =
-    inArea cell && (not <| inPath maze cell) && (not <| adjacentPath maze cell previousCell)
+    inArea cell && (not <| onExistingPath maze cell) && makeSinglePath maze cell previousCell
 
 
 inArea : Cell -> Bool
@@ -67,13 +67,13 @@ inArea ( x, y ) =
     y >= 0
 
 
-inPath : Maze -> Cell -> Bool
-inPath maze cell =
+onExistingPath : Maze -> Cell -> Bool
+onExistingPath maze cell =
     Dict.member cell maze
 
 
-adjacentPath : Maze -> Cell -> Cell -> Bool
-adjacentPath maze previousCell cell =
+makeSinglePath : Maze -> Cell -> Cell -> Bool
+makeSinglePath maze previousCell cell =
     let
         neighborhood =
             vonNeumannNeighborhood cell
@@ -81,4 +81,4 @@ adjacentPath maze previousCell cell =
         neighborhoodWithoutPrevious =
             Set.remove previousCell neighborhood
     in
-    Set.filter (inPath maze) neighborhoodWithoutPrevious |> Set.isEmpty |> not
+    Set.filter (onExistingPath maze) neighborhoodWithoutPrevious |> Set.isEmpty
