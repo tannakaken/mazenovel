@@ -78,15 +78,26 @@ randomChooser seed =
 -}
 novelPath : Chooser -> String -> Maybe Maze
 novelPath chooser novel =
-    novelPathAux chooser novel Dict.empty Set.empty ( 0, 0 )
+    if String.isEmpty novel then
+        Nothing
+
+    else
+        let
+            c =
+                String.left 1 novel
+
+            rest =
+                String.dropLeft 1 novel
+        in
+        novelPathAux chooser c rest Dict.empty Set.empty ( 0, 0 )
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-novelPathAux : Chooser -> String -> Maze -> Set Cell -> Cell -> Maybe Maze
-novelPathAux chooser novel maze exceptions currentCell =
-    if String.length novel == 0 then
-        Just maze
+novelPathAux : Chooser -> String -> String -> Maze -> Set Cell -> Cell -> Maybe Maze
+novelPathAux chooser currentChar currentRest maze exceptions currentCell =
+    if String.length currentRest == 0 then
+        Just (insert currentCell currentChar maze)
 
     else
         let
@@ -100,20 +111,20 @@ novelPathAux chooser novel maze exceptions currentCell =
             Just ( nextCell, nextChooser ) ->
                 let
                     c =
-                        String.left 1 novel
+                        String.left 1 currentRest
 
                     rest =
-                        String.dropLeft 1 novel
+                        String.dropLeft 1 currentRest
 
                     nextMaze =
-                        insert nextCell c maze
+                        insert currentCell currentChar maze
 
                     result =
-                        novelPathAux nextChooser rest nextMaze Set.empty nextCell
+                        novelPathAux nextChooser c rest nextMaze Set.empty nextCell
                 in
                 case result of
                     Nothing ->
-                        novelPathAux chooser novel maze (Set.insert nextCell exceptions) currentCell
+                        novelPathAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
 
                     _ ->
                         result
