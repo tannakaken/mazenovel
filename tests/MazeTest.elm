@@ -8,6 +8,26 @@ import Set
 import Test exposing (..)
 
 
+testChooser : Maze.Chooser
+testChooser =
+    Maze.Chooser
+        (\cellset ->
+            let
+                celllist =
+                    Set.toList cellset
+
+                x =
+                    List.head celllist
+            in
+            case x of
+                Nothing ->
+                    Nothing
+
+                Just cell ->
+                    Just ( cell, testChooser )
+        )
+
+
 sampleMaze : List Maze.Cell -> Maze.Maze
 sampleMaze cells =
     case cells of
@@ -21,7 +41,14 @@ sampleMaze cells =
 suite : Test
 suite =
     describe "The Maze module"
-        [ describe "Maze.choiceOfNextCell"
+        [ describe "Maze.novelPath"
+            [ test "make one cell path" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.novelPath testChooser "h")
+                        (Just (Dict.fromList [ ( ( 0, 0 ), "h" ) ]))
+            ]
+        , describe "Maze.choiceOfNextCell"
             [ test "choice of next cell" <|
                 \_ ->
                     Expect.equal

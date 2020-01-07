@@ -76,15 +76,15 @@ randomChooser seed =
 
 {-| 文字列から迷路の一本道を作る
 -}
-randomPath : Chooser -> String -> Maybe Maze
-randomPath chooser novel =
-    randomPathAux chooser novel Dict.empty Set.empty ( 0, 0 )
+novelPath : Chooser -> String -> Maybe Maze
+novelPath chooser novel =
+    novelPathAux chooser novel Dict.empty Set.empty ( 0, 0 )
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-randomPathAux : Chooser -> String -> Maze -> Set Cell -> Cell -> Maybe Maze
-randomPathAux chooser novel maze exceptions currentCell =
+novelPathAux : Chooser -> String -> Maze -> Set Cell -> Cell -> Maybe Maze
+novelPathAux chooser novel maze exceptions currentCell =
     if String.length novel == 0 then
         Just maze
 
@@ -109,11 +109,11 @@ randomPathAux chooser novel maze exceptions currentCell =
                         insert nextCell c maze
 
                     result =
-                        randomPathAux nextChooser rest nextMaze Set.empty nextCell
+                        novelPathAux nextChooser rest nextMaze Set.empty nextCell
                 in
                 case result of
                     Nothing ->
-                        randomPathAux chooser novel maze (Set.insert nextCell exceptions) currentCell
+                        novelPathAux chooser novel maze (Set.insert nextCell exceptions) currentCell
 
                     _ ->
                         result
