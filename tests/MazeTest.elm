@@ -56,8 +56,7 @@ suite =
                 \_ ->
                     Expect.equal
                         (Maze.novelPath testChooser "hel")
-                        (Just (Dict.fromList [ ( ( 0, 0 ), "h" ), ( ( -1, 0 ), "e" ), ((-2,0), "l") ]))
-                      
+                        (Just (Dict.fromList [ ( ( 0, 0 ), "h" ), ( ( -1, 0 ), "e" ), ( ( -2, 0 ), "l" ) ]))
             ]
         , describe "Maze.choiceOfNextCell"
             [ test "choice of next cell" <|
