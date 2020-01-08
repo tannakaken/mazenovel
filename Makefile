@@ -15,7 +15,7 @@ public/elm.js: $(SRC)
 
 .PHONY: tree
 tree: public/tree.json
-public/tree.json: $(NOVELS) 
+public/tree.json: $(NOVELS) tree.rb
 	ruby tree.rb
 
 new:

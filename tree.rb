@@ -1,6 +1,6 @@
 require "json"
 
-tree = [{node: nil, next: []}]
+tree = [{c: nil, n: []}]
 novels = Dir.glob("novels/*")
 novels.each do |file|
   File.open(file) do |f|
@@ -9,9 +9,9 @@ novels.each do |file|
     line.each_char do |c|
       currentNode = tree[currentIndex]
       passed = false
-      currentNode[:next].each do |branchIndex|
+      currentNode[:n].each do |branchIndex|
         branchNode = tree[branchIndex]
-        if branchNode[:node] == c then
+        if branchNode[:c] == c then
           currentIndex = branchIndex
           passed = true
           break
@@ -20,10 +20,10 @@ novels.each do |file|
       if passed
         next
       end
-      newBranchNode = {node: c, next: []}
+      newBranchNode = {c: c, n: []}
       newBranchIndex = tree.size
       tree.push newBranchNode
-      currentNode[:next].push newBranchIndex
+      currentNode[:n].push newBranchIndex
       currentIndex = newBranchIndex
     end
   end

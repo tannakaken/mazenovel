@@ -144,8 +144,8 @@ jsonDecoder : Decoder NovelMaze
 jsonDecoder =
     JD.array
         (JD.map2 NovelNode
-            (JD.field "node" (JD.nullable JD.string))
-            (JD.field "next" (JD.array JD.int))
+            (JD.field "c" (JD.nullable JD.string))
+            (JD.field "n" (JD.array JD.int))
         )
 
 
