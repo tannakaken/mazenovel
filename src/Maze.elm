@@ -24,6 +24,11 @@ insert cell c maze =
     Dict.insert cell c maze
 
 
+get : Cell -> Maze -> Maybe String
+get cell maze =
+    Dict.get cell maze
+
+
 type Chooser
     = Chooser (Set Cell -> Maybe ( Cell, Chooser ))
 
@@ -33,8 +38,8 @@ choose (Chooser chooser) cells =
     chooser cells
 
 
-get : Int -> List a -> Maybe a
-get nth list =
+getNth : Int -> List a -> Maybe a
+getNth nth list =
     list |> List.drop nth |> List.head
 
 
@@ -62,7 +67,7 @@ randomChooser seed =
                             Random.step indexGenerator seed
 
                         maybe =
-                            get index list
+                            getNth index list
                     in
                     case maybe of
                         Nothing ->
@@ -72,6 +77,21 @@ randomChooser seed =
                             Just ( x, randomChooser nextSeed )
     in
     Chooser chooser
+
+
+type alias Area =
+    { top : Int
+    , right : Int
+    , bottom : Int
+    , left : Int
+    }
+
+
+getArea : Maze -> Area
+getArea maze =
+    Dict.keys maze
+        |> List.foldl (\( x, y ) { top, right, bottom, left } -> Area (max y top) (max x right) (min y bottom) (min x left))
+            (Area 0 0 0 0)
 
 
 {-| 文字列から迷路の一本道を作る

@@ -1,12 +1,16 @@
-NOVELDIR := novels
-NOVELS := $(wildcard $(NOVELDIR)/novel*.txt)
+NOVELSDIR := novels
+SRCDIR := src
+TESTSDIR := tests
+NOVELS := $(wildcard $(NOVELSDIR)/novel*.txt)
+SRC := $(wildcard $(SRCDIR)/*.elm) 
+TESTS := $(wildcard $(TESTSDIR)/*.elm)
 
 .PHONY: all
 all: main tree
 
 .PHONY: index
 main: public/elm.js
-public/elm.js: src/Main.elm
+public/elm.js: $(SRC)
 	npx elm make src/Main.elm --output public/elm.js
 
 .PHONY: tree
@@ -21,7 +25,7 @@ serve:
 	php -S localhost:8000 -t public/
 
 .PHONY: test
-test:
+test: $(SRC) $(TESTS)
 	npx elm-test
 
 .PHONY: format

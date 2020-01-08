@@ -3,9 +3,10 @@ module Main exposing (main)
 import Array exposing (Array, foldr, get, length)
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, pre, text)
+import Html exposing (..)
 import Http
 import Json.Decode as JD exposing (Decoder)
+import Maze
 import Random
 import Task
 import Time
@@ -229,7 +230,7 @@ view model =
                 text "loading..."
 
             Success novelMaze ->
-                randomNovel model.seed novelMaze |> text
+                randomMazeHtml model.seed novelMaze
         ]
     }
 
@@ -276,3 +277,68 @@ randomNovelAux seed novelMaze currentIndex =
                         in
                         randomNovelAux nextSeed novelMaze nextIndex
                    )
+
+
+randomMaze : Random.Seed -> NovelMaze -> Maybe Maze.Maze
+randomMaze seed novelMaze =
+    randomNovel seed novelMaze |> Maze.novelPath (Maze.randomChooser seed)
+
+
+randomMazeHtml : Random.Seed -> NovelMaze -> Html msg
+randomMazeHtml seed novelMaze =
+    let
+        maybeMaze =
+            randomMaze seed novelMaze
+    in
+    case maybeMaze of
+        Nothing ->
+            text "oops"
+
+        Just maze ->
+            let
+                area =
+                    Maze.getArea maze
+            in
+            div [] <| mazeRows area maze
+
+
+mazeRows : Maze.Area -> Maze.Maze -> List (Html msg)
+mazeRows area maze =
+    mazeRowsAux area maze area.top []
+
+
+mazeRowsAux : Maze.Area -> Maze.Maze -> Int -> List (Html msg) -> List (Html msg)
+mazeRowsAux area maze row acc =
+    if row < area.bottom then
+        acc
+
+    else
+        mazeRowsAux area maze (row - 1) (acc ++ [ div [] (mazeColumns area maze row) ])
+
+
+mazeColumns : Maze.Area -> Maze.Maze -> Int -> List (Html msg)
+mazeColumns area maze row =
+    mazeColumnsAux area maze row area.left []
+
+
+mazeColumnsAux : Maze.Area -> Maze.Maze -> Int -> Int -> List (Html msg) -> List (Html msg)
+mazeColumnsAux area maze row column acc =
+    if column > area.right then
+        acc
+
+    else
+        mazeColumnsAux area maze row (column + 1) (acc ++ [ span [] [ mazeCell ( column, row ) maze ] ])
+
+
+mazeCell : Maze.Cell -> Maze.Maze -> Html msg
+mazeCell cell maze =
+    let
+        maybe =
+            Maze.get cell maze
+    in
+    case maybe of
+        Nothing ->
+            span [] [ text "\u{3000}" ]
+
+        Just str ->
+            span [] [ text str ]
