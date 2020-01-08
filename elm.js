@@ -6266,11 +6266,11 @@ var $author$project$Main$jsonDecoder = $elm$json$Json$Decode$array(
 		$author$project$Main$NovelNode,
 		A2(
 			$elm$json$Json$Decode$field,
-			'node',
+			'c',
 			$elm$json$Json$Decode$nullable($elm$json$Json$Decode$string)),
 		A2(
 			$elm$json$Json$Decode$field,
-			'next',
+			'n',
 			$elm$json$Json$Decode$array($elm$json$Json$Decode$int))));
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
