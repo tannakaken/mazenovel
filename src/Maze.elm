@@ -125,9 +125,11 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
                 chooseNextCell chooser maze exceptions currentCell
         in
         case maybeNextCell of
+            {- 選べる道が存在しない。つまり行き止まり -}
             Nothing ->
                 Nothing
 
+            {- 試しに選んだ道を伸ばしてみる -}
             Just ( nextCell, nextChooser ) ->
                 let
                     c =
@@ -139,13 +141,16 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
                     nextMaze =
                         insert currentCell currentChar maze
 
+                    {- 道をさらに伸ばす -}
                     result =
                         novelPathAux nextChooser c rest nextMaze Set.empty nextCell
                 in
                 case result of
+                    {- 道を伸ばした結果が行き止まりな時は、その道を選択肢から除外してバックトラックする -}
                     Nothing ->
                         novelPathAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
 
+                    {- 道が伸ばせたならそのまま返す -}
                     _ ->
                         result
 
