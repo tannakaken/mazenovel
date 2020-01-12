@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class)
 import Http
 import Json.Decode as JD exposing (Decoder)
-import Maze
+import Maze exposing (Area, Cell, Maze)
 import Random
 import Task
 import Time
@@ -303,12 +303,12 @@ randomMazeHtml seed novelMaze =
             div [] <| mazeRows area maze
 
 
-mazeRows : Maze.Area -> Maze.Maze -> List (Html msg)
+mazeRows : Area -> Maze -> List (Html msg)
 mazeRows area maze =
     mazeRowsAux area maze area.top []
 
 
-mazeRowsAux : Maze.Area -> Maze.Maze -> Int -> List (Html msg) -> List (Html msg)
+mazeRowsAux : Area -> Maze -> Int -> List (Html msg) -> List (Html msg)
 mazeRowsAux area maze row acc =
     if row < area.bottom then
         acc
@@ -317,12 +317,12 @@ mazeRowsAux area maze row acc =
         mazeRowsAux area maze (row - 1) (acc ++ [ div [] (mazeColumns area maze row) ])
 
 
-mazeColumns : Maze.Area -> Maze.Maze -> Int -> List (Html msg)
+mazeColumns : Area -> Maze -> Int -> List (Html msg)
 mazeColumns area maze row =
     mazeColumnsAux area maze row area.left []
 
 
-mazeColumnsAux : Maze.Area -> Maze.Maze -> Int -> Int -> List (Html msg) -> List (Html msg)
+mazeColumnsAux : Area -> Maze -> Int -> Int -> List (Html msg) -> List (Html msg)
 mazeColumnsAux area maze row column acc =
     if column > area.right then
         acc
@@ -331,7 +331,7 @@ mazeColumnsAux area maze row column acc =
         mazeColumnsAux area maze row (column + 1) (acc ++ [ mazeCell ( column, row ) maze ])
 
 
-mazeCell : Maze.Cell -> Maze.Maze -> Html msg
+mazeCell : Cell -> Maze -> Html msg
 mazeCell cell maze =
     let
         maybe =
@@ -339,7 +339,7 @@ mazeCell cell maze =
     in
     case maybe of
         Nothing ->
-            span [class "wall"] [ text "\u{3000}" ]
+            span [ class "wall" ] [ text "\u{3000}" ]
 
         Just str ->
-            span [class "path"] [ text str ]
+            span [ class "path" ] [ text str ]
