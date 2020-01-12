@@ -38,6 +38,16 @@ choose (Chooser chooser) cells =
     chooser cells
 
 
+next : Chooser -> Chooser
+next chooser =
+    case choose chooser (Set.fromList [ ( 0, 0 ) ]) of
+        Just ( _, nextChooser ) ->
+            nextChooser
+
+        Nothing ->
+            chooser
+
+
 getNth : Int -> List a -> Maybe a
 getNth nth list =
     list |> List.drop nth |> List.head
@@ -94,6 +104,11 @@ getArea maze =
             (Area 0 0 0 0)
 
 
+type MazeResult
+    = MazeResult Maze
+    | BackTrack Int
+
+
 {-| 文字列から迷路の一本道を作る
 -}
 novelPath : Chooser -> String -> Maybe Maze
@@ -109,15 +124,24 @@ novelPath chooser novel =
             rest =
                 String.dropLeft 1 novel
         in
-        novelPathAux chooser c rest Dict.empty Set.empty ( 0, 0 )
+        case novelPathAux chooser c rest Dict.empty Set.empty ( 0, 0 ) of
+            MazeResult maze ->
+                Just maze
+
+            BackTrack _ ->
+                let
+                    nextChooser =
+                        next chooser
+                in
+                novelPath nextChooser novel
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-novelPathAux : Chooser -> String -> String -> Maze -> Set Cell -> Cell -> Maybe Maze
+novelPathAux : Chooser -> String -> String -> Maze -> Set Cell -> Cell -> MazeResult
 novelPathAux chooser currentChar currentRest maze exceptions currentCell =
     if String.length currentRest == 0 then
-        Just (insert currentCell currentChar maze)
+        MazeResult (insert currentCell currentChar maze)
 
     else
         let
@@ -127,7 +151,7 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
         case maybeNextCell of
             {- 選べる道が存在しない。つまり行き止まり -}
             Nothing ->
-                Nothing
+                BackTrack 10
 
             {- 試しに選んだ道を伸ばしてみる -}
             Just ( nextCell, nextChooser ) ->
@@ -147,8 +171,12 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
                 in
                 case result of
                     {- 道を伸ばした結果が行き止まりな時は、その道を選択肢から除外してバックトラックする -}
-                    Nothing ->
-                        novelPathAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
+                    BackTrack n ->
+                        if n == 0 then
+                            novelPathAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
+
+                        else
+                            BackTrack (n - 1)
 
                     {- 道が伸ばせたならそのまま返す -}
                     _ ->
