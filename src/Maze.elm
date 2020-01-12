@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Random
 import Set exposing (Set)
+import Util exposing (getNth)
 
 
 type alias Cell =
@@ -53,11 +54,6 @@ next chooser =
         {- Chooserが正しく設計されていれば、この節は実行されない。 -}
         Nothing ->
             chooser
-
-
-getNth : Int -> List a -> Maybe a
-getNth nth list =
-    list |> List.drop nth |> List.head
 
 
 randomChooser : Random.Seed -> Chooser
