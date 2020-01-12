@@ -339,7 +339,7 @@ mazeCell cell maze =
     in
     case maybe of
         Nothing ->
-            span [] [ text "\u{3000}" ]
+            span [class "wall"] [ text "\u{3000}" ]
 
         Just str ->
-            span [] [ text str ]
+            span [class "path"] [ text str ]
