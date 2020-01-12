@@ -4,6 +4,7 @@ import Array exposing (Array, foldr, get, length)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
+import Html.Attributes exposing (class)
 import Http
 import Json.Decode as JD exposing (Decoder)
 import Maze
@@ -292,7 +293,7 @@ randomMazeHtml seed novelMaze =
     in
     case maybeMaze of
         Nothing ->
-            text "oops"
+            div [ class "error" ] [ text "迷路作成に失敗しました。" ]
 
         Just maze ->
             let
@@ -327,7 +328,7 @@ mazeColumnsAux area maze row column acc =
         acc
 
     else
-        mazeColumnsAux area maze row (column + 1) (acc ++ [ span [] [ mazeCell ( column, row ) maze ] ])
+        mazeColumnsAux area maze row (column + 1) (acc ++ [ mazeCell ( column, row ) maze ])
 
 
 mazeCell : Maze.Cell -> Maze.Maze -> Html msg
