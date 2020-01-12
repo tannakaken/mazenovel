@@ -6896,6 +6896,43 @@ var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
 var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $author$project$Maze$choose = F2(
+	function (_v0, cells) {
+		var chooser = _v0.a;
+		return chooser(cells);
+	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
+var $author$project$Maze$next = function (chooser) {
+	var _v0 = A2(
+		$author$project$Maze$choose,
+		chooser,
+		$elm$core$Set$fromList(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(0, 0)
+				])));
+	if (_v0.$ === 'Just') {
+		var _v1 = _v0.a;
+		var nextChooser = _v1.b;
+		return nextChooser;
+	} else {
+		return chooser;
+	}
+};
+var $author$project$Maze$BackTrack = function (a) {
+	return {$: 'BackTrack', a: a};
+};
+var $author$project$Maze$MazeResult = function (a) {
+	return {$: 'MazeResult', a: a};
+};
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -6974,15 +7011,6 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Set$fromList = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
-};
 var $author$project$Maze$vonNeumannNeighborhood = function (cell) {
 	var _v0 = cell;
 	var x = _v0.a;
@@ -7047,11 +7075,6 @@ var $author$project$Maze$choiceOfNextCell = F3(
 		}(
 			$author$project$Maze$vonNeumannNeighborhood(currentCell));
 	});
-var $author$project$Maze$choose = F2(
-	function (_v0, cells) {
-		var chooser = _v0.a;
-		return chooser(cells);
-	});
 var $author$project$Maze$chooseNextCell = F4(
 	function (chooser, maze, exceptions, currentCell) {
 		return A2(
@@ -7068,12 +7091,12 @@ var $author$project$Maze$novelPathAux = F6(
 		novelPathAux:
 		while (true) {
 			if (!$elm$core$String$length(currentRest)) {
-				return $elm$core$Maybe$Just(
+				return $author$project$Maze$MazeResult(
 					A3($author$project$Maze$insert, currentCell, currentChar, maze));
 			} else {
 				var maybeNextCell = A4($author$project$Maze$chooseNextCell, chooser, maze, exceptions, currentCell);
 				if (maybeNextCell.$ === 'Nothing') {
-					return $elm$core$Maybe$Nothing;
+					return $author$project$Maze$BackTrack(10);
 				} else {
 					var _v1 = maybeNextCell.a;
 					var nextCell = _v1.a;
@@ -7082,20 +7105,25 @@ var $author$project$Maze$novelPathAux = F6(
 					var nextMaze = A3($author$project$Maze$insert, currentCell, currentChar, maze);
 					var c = A2($elm$core$String$left, 1, currentRest);
 					var result = A6($author$project$Maze$novelPathAux, nextChooser, c, rest, nextMaze, $elm$core$Set$empty, nextCell);
-					if (result.$ === 'Nothing') {
-						var $temp$chooser = chooser,
-							$temp$currentChar = currentChar,
-							$temp$currentRest = currentRest,
-							$temp$maze = maze,
-							$temp$exceptions = A2($elm$core$Set$insert, nextCell, exceptions),
-							$temp$currentCell = currentCell;
-						chooser = $temp$chooser;
-						currentChar = $temp$currentChar;
-						currentRest = $temp$currentRest;
-						maze = $temp$maze;
-						exceptions = $temp$exceptions;
-						currentCell = $temp$currentCell;
-						continue novelPathAux;
+					if (result.$ === 'BackTrack') {
+						var n = result.a;
+						if (!n) {
+							var $temp$chooser = chooser,
+								$temp$currentChar = currentChar,
+								$temp$currentRest = currentRest,
+								$temp$maze = maze,
+								$temp$exceptions = A2($elm$core$Set$insert, nextCell, exceptions),
+								$temp$currentCell = currentCell;
+							chooser = $temp$chooser;
+							currentChar = $temp$currentChar;
+							currentRest = $temp$currentRest;
+							maze = $temp$maze;
+							exceptions = $temp$exceptions;
+							currentCell = $temp$currentCell;
+							continue novelPathAux;
+						} else {
+							return $author$project$Maze$BackTrack(n - 1);
+						}
 					} else {
 						return result;
 					}
@@ -7105,19 +7133,33 @@ var $author$project$Maze$novelPathAux = F6(
 	});
 var $author$project$Maze$novelPath = F2(
 	function (chooser, novel) {
-		if ($elm$core$String$isEmpty(novel)) {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var rest = A2($elm$core$String$dropLeft, 1, novel);
-			var c = A2($elm$core$String$left, 1, novel);
-			return A6(
-				$author$project$Maze$novelPathAux,
-				chooser,
-				c,
-				rest,
-				$elm$core$Dict$empty,
-				$elm$core$Set$empty,
-				_Utils_Tuple2(0, 0));
+		novelPath:
+		while (true) {
+			if ($elm$core$String$isEmpty(novel)) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var rest = A2($elm$core$String$dropLeft, 1, novel);
+				var c = A2($elm$core$String$left, 1, novel);
+				var _v0 = A6(
+					$author$project$Maze$novelPathAux,
+					chooser,
+					c,
+					rest,
+					$elm$core$Dict$empty,
+					$elm$core$Set$empty,
+					_Utils_Tuple2(0, 0));
+				if (_v0.$ === 'MazeResult') {
+					var maze = _v0.a;
+					return $elm$core$Maybe$Just(maze);
+				} else {
+					var nextChooser = $author$project$Maze$next(chooser);
+					var $temp$chooser = nextChooser,
+						$temp$novel = novel;
+					chooser = $temp$chooser;
+					novel = $temp$novel;
+					continue novelPath;
+				}
+			}
 		}
 	});
 var $author$project$Maze$Chooser = function (a) {
