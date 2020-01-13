@@ -227,7 +227,7 @@ view model =
     }
 
 
-randomMaze : Random.Seed -> NovelTree -> Maybe Maze
+randomMaze : Random.Seed -> NovelTree -> Maze
 randomMaze seed novelTree =
     let 
         (novel, _) = randomNovel seed novelTree
@@ -238,19 +238,12 @@ randomMaze seed novelTree =
 randomMazeHtml : Random.Seed -> NovelTree -> Html msg
 randomMazeHtml seed novelTree =
     let
-        maybeMaze =
+        maze =
             randomMaze seed novelTree
+        area =
+            Maze.getArea maze
     in
-    case maybeMaze of
-        Nothing ->
-            div [ class "error" ] [ text "迷路作成に失敗しました。" ]
-
-        Just maze ->
-            let
-                area =
-                    Maze.getArea maze
-            in
-            div [] <| mazeRows area maze
+        div [] <| mazeRows area maze
 
 
 mazeRows : Area -> Maze -> List (Html msg)

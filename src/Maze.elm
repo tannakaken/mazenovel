@@ -116,10 +116,10 @@ type MazeResult {- 完成した迷路 -}
 
 {-| 文字列から迷路の一本道を作る。
 -}
-novelPath : Chooser -> String -> Maybe Maze
+novelPath : Chooser -> String -> Maze
 novelPath chooser novel =
     if String.isEmpty novel then
-        Nothing
+        empty
 
     else
         let
@@ -129,10 +129,10 @@ novelPath chooser novel =
             rest =
                 String.dropLeft 1 novel
         in
-        case novelPathAux chooser c rest Dict.empty Set.empty ( 0, 0 ) of
+        case novelPathAux chooser c rest empty Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}
             MazeResult maze ->
-                Just maze
+                maze
 
             {- バックトラックで最初まで戻ってしまった時は、別の乱数を使う。 -}
             BackTrack _ ->
