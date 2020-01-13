@@ -10,7 +10,7 @@ import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Cell, Maze)
 import Novel exposing (NovelNode, NovelTree, randomNovel)
 import Random
-import Route exposing (Route(..), urlToRoute)
+import Route exposing (Route(..), Query, urlToRoute)
 import Task
 import Time
 import Url exposing (Url)
@@ -68,8 +68,8 @@ init _ url key =
             , Task.perform GotTime Time.now
             )
 
-        Just (Top maybeSeed) ->
-            case maybeSeed of
+        Just (Top query) ->
+            case query.seed of
                 Nothing ->
                     ( Model key url Loading dummySeed
                     , Task.perform GotTime Time.now
