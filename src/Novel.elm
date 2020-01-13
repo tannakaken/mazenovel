@@ -57,8 +57,9 @@ randomNovelAux seed novelTree currentIndex =
 
             else if length == 1 then
                 let
+                    {- Array.getは実際には必ず成功するはず -}
                     nextIndex =
-                        Maybe.withDefault 0 (Array.get 0 node.next)
+                        Maybe.withDefault -1 (Array.get 0 node.next)
 
                     ( restNovel, path ) =
                         randomNovelAux seed novelTree nextIndex
@@ -73,8 +74,9 @@ randomNovelAux seed novelTree currentIndex =
                     ( choice, nextSeed ) =
                         Random.step indexGenerator seed
 
+                    {- Array.getは実際には必ず成功するはず -}
                     nextIndex =
-                        Maybe.withDefault 0 (Array.get choice node.next)
+                        Maybe.withDefault -1 (Array.get choice node.next)
 
                     ( restNovel, restPath ) =
                         randomNovelAux nextSeed novelTree nextIndex
