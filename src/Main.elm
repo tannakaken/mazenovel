@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, href)
 import Http
 import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Cell, Maze)
@@ -41,7 +41,7 @@ type alias Model =
     { key : Nav.Key
     , url : Url.Url
     , state : State
-    , seed : Random.Seed
+    , seed : Int
     }
 
 
@@ -70,23 +70,26 @@ urlToRoute url =
     UP.parse routeParser url
 
 
+dummySeed : Int
+dummySeed = 0
+
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     case urlToRoute url of
         Nothing ->
-            ( Model key url Loading (Random.initialSeed 0)
+            ( Model key url Loading dummySeed
             , Task.perform GotTime Time.now
             )
 
         Just (Top maybeSeed) ->
             case maybeSeed of
                 Nothing ->
-                    ( Model key url Loading (Random.initialSeed 0)
+                    ( Model key url Loading dummySeed
                     , Task.perform GotTime Time.now
                     )
 
                 Just seed ->
-                    ( Model key url Loading (Random.initialSeed seed)
+                    ( Model key url Loading seed
                     , Http.get
                         { url = jsonUrl url
                         , expect = Http.expectJson GotJson jsonDecoder
@@ -163,7 +166,7 @@ update msg model =
             ( { model | url = url }, Cmd.none )
 
         GotTime posix ->
-            ( { model | seed = Random.initialSeed (Time.posixToMillis posix) }
+            ( { model | seed = Time.posixToMillis posix }
             , Http.get
                 { url = jsonUrl model.url
                 , expect = Http.expectJson GotJson jsonDecoder
@@ -227,14 +230,19 @@ view model =
     }
 
 
-randomMaze : Random.Seed -> NovelTree -> ( Maze, String )
+randomMaze : Int -> NovelTree -> ( Maze, String )
 randomMaze seed novelTree =
     let
+        random = Random.initialSeed seed    
+
         ( novel, novelPath ) =
-            randomNovel seed novelTree
+            randomNovel random novelTree
+
+        chooser =
+            Maze.randomChooser random
 
         maze =
-            Maze.novelPath (Maze.randomChooser seed) novel
+            Maze.novelPath chooser novel
 
         pathString =
             Novel.pathToString novelPath
@@ -242,7 +250,7 @@ randomMaze seed novelTree =
     ( maze, pathString )
 
 
-randomMazeHtml : Random.Seed -> NovelTree -> Html msg
+randomMazeHtml : Int -> NovelTree -> Html msg
 randomMazeHtml seed novelTree =
     let
         ( maze, pathString ) =
@@ -254,8 +262,15 @@ randomMazeHtml seed novelTree =
     article [ class "main" ]
         [ div [ class "maze" ] <| mazeRows area maze
         , div [ class "path" ] [ text pathString ]
+        , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink seed ]
         ]
 
+seedLink : Int -> Html msg
+seedLink seed =
+    let 
+      link = "/?seed=" ++ String.fromInt seed
+    in
+      a [ href link ] [text link]
 
 mazeRows : Area -> Maze -> List (Html msg)
 mazeRows area maze =
