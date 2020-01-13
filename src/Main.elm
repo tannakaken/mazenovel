@@ -227,29 +227,34 @@ view model =
     }
 
 
-randomMaze : Random.Seed -> NovelTree -> (Maze, String)
+randomMaze : Random.Seed -> NovelTree -> ( Maze, String )
 randomMaze seed novelTree =
-    let 
-        (novel, novelPath) = randomNovel seed novelTree
-        maze = Maze.novelPath (Maze.randomChooser seed) novel
-        pathString = Novel.pathToString novelPath
+    let
+        ( novel, novelPath ) =
+            randomNovel seed novelTree
+
+        maze =
+            Maze.novelPath (Maze.randomChooser seed) novel
+
+        pathString =
+            Novel.pathToString novelPath
     in
-        (maze, pathString)
+    ( maze, pathString )
 
 
 randomMazeHtml : Random.Seed -> NovelTree -> Html msg
 randomMazeHtml seed novelTree =
     let
-        (maze, pathString) =
+        ( maze, pathString ) =
             randomMaze seed novelTree
+
         area =
             Maze.getArea maze
     in
-        article [class "main"]
-          [
-            div [class "maze"] <| mazeRows area maze
-          , div [class "path"] [text pathString]
-          ]
+    article [ class "main" ]
+        [ div [ class "maze" ] <| mazeRows area maze
+        , div [ class "path" ] [ text pathString ]
+        ]
 
 
 mazeRows : Area -> Maze -> List (Html msg)

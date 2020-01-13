@@ -26,8 +26,6 @@ suite =
                 \_ ->
                     Expect.equal
                         (Novel.randomNovel (Random.initialSeed 0) testNovelTree)
-                        ("hello", [])
+                        ( "hello", [] )
             ]
         ]
-
-
