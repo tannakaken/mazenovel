@@ -1,4 +1,4 @@
-module Novel exposing (NovelNode, NovelTree, pathFromString, pathToString, randomNovel)
+module Novel exposing (NovelNode, NovelPath, NovelTree, pathFromString, pathToString, randomNovel)
 
 import Array exposing (Array)
 import Random
@@ -23,18 +23,25 @@ pathToString path =
     List.map String.fromInt path |> String.join ","
 
 
-pathFromString : String -> NovelPath
+combineMaybe : List (Maybe a) -> Maybe (List a)
+combineMaybe =
+    List.foldr (Maybe.map2 (::)) (Just [])
+
+
+pathFromString : String -> Maybe NovelPath
 pathFromString str =
-    String.split "," str |> List.map (String.toInt >> Maybe.withDefault 0)
+    String.split "," str
+        |> List.map String.toInt
+        |> combineMaybe
 
 
-randomNovel : Random.Seed -> NovelTree -> ( String, NovelPath )
-randomNovel seed novelTree =
-    randomNovelAux seed novelTree 0
+randomNovel : Random.Seed -> NovelPath -> NovelTree -> ( String, NovelPath )
+randomNovel seed novelPath novelTree =
+    randomNovelAux seed novelPath novelTree 0
 
 
-randomNovelAux : Random.Seed -> NovelTree -> Int -> ( String, NovelPath )
-randomNovelAux seed novelTree currentIndex =
+randomNovelAux : Random.Seed -> NovelPath -> NovelTree -> Int -> ( String, NovelPath )
+randomNovelAux seed novelPath novelTree currentIndex =
     let
         currentNode =
             Array.get currentIndex novelTree
@@ -62,7 +69,7 @@ randomNovelAux seed novelTree currentIndex =
                         Maybe.withDefault -1 (Array.get 0 node.next)
 
                     ( restNovel, path ) =
-                        randomNovelAux seed novelTree nextIndex
+                        randomNovelAux seed novelPath novelTree nextIndex
                 in
                 ( h ++ restNovel, path )
 
@@ -79,6 +86,6 @@ randomNovelAux seed novelTree currentIndex =
                         Maybe.withDefault -1 (Array.get choice node.next)
 
                     ( restNovel, restPath ) =
-                        randomNovelAux nextSeed novelTree nextIndex
+                        randomNovelAux nextSeed novelPath novelTree nextIndex
                 in
                 ( h ++ restNovel, choice :: restPath )

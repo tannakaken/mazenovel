@@ -8,7 +8,7 @@ import Html.Attributes exposing (class, href)
 import Http
 import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Cell, Maze)
-import Novel exposing (NovelNode, NovelTree, randomNovel)
+import Novel exposing (NovelNode, NovelPath, NovelTree, randomNovel)
 import Random
 import Route exposing (Query, Route(..), urlToRoute)
 import Task
@@ -42,6 +42,7 @@ type alias Model =
     , url : Url
     , state : State
     , seed : Int
+    , path : NovelPath
     }
 
 
@@ -60,28 +61,50 @@ dummySeed =
     0
 
 
+defaultPath : NovelPath
+defaultPath =
+    []
+
+
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     case urlToRoute url of
         Nothing ->
-            ( Model key url Loading dummySeed
-            , Task.perform GotTime Time.now
+            ( Model key url (Failure "お探しのページは見つかりません。") dummySeed defaultPath
+            , Cmd.none
             )
 
         Just (Top query) ->
-            case query.seed of
+            case query.path of
                 Nothing ->
-                    ( Model key url Loading dummySeed
-                    , Task.perform GotTime Time.now
-                    )
+                    seedInitialize url key defaultPath query.seed
 
-                Just seed ->
-                    ( Model key url Loading seed
-                    , Http.get
-                        { url = jsonUrl url
-                        , expect = Http.expectJson GotJson jsonDecoder
-                        }
-                    )
+                Just pathString ->
+                    case Novel.pathFromString pathString of
+                        Nothing ->
+                            ( Model key url (Failure "お探しの迷路は道は見つかりません。") dummySeed defaultPath
+                            , Cmd.none
+                            )
+
+                        Just path ->
+                            seedInitialize url key path query.seed
+
+
+seedInitialize : Url -> Nav.Key -> NovelPath -> Maybe Int -> ( Model, Cmd Msg )
+seedInitialize url key path maybeSeed =
+    case maybeSeed of
+        Nothing ->
+            ( Model key url Loading dummySeed path
+            , Task.perform GotTime Time.now
+            )
+
+        Just seed ->
+            ( Model key url Loading seed path
+            , Http.get
+                { url = jsonUrl url
+                , expect = Http.expectJson GotJson jsonDecoder
+                }
+            )
 
 
 
@@ -146,8 +169,18 @@ errorToString err =
         Http.NetworkError ->
             "ネットワークがおかしいです"
 
-        Http.BadStatus _ ->
-            "ステータスがおかしいです"
+        Http.BadStatus status ->
+            if status == 400 then
+                "不正なリクエストです。"
+
+            else if status == 404 then
+                "お探しのページは存在しません。"
+
+            else if status == 500 then
+                "サーバー内部エラーが発生しました。"
+
+            else
+                "サーバーエラーが発生しました。"
 
         Http.BadBody message ->
             message
@@ -172,7 +205,7 @@ view model =
     , body =
         [ case model.state of
             Failure errorMessage ->
-                text ("データのロードに失敗しました:" ++ errorMessage)
+                text errorMessage
 
             Loading ->
                 text "loading..."
@@ -183,14 +216,14 @@ view model =
     }
 
 
-randomMaze : Int -> NovelTree -> ( Maze, String )
-randomMaze seed novelTree =
+randomMaze : Model -> NovelTree -> ( Maze, String )
+randomMaze model novelTree =
     let
         random =
-            Random.initialSeed seed
+            Random.initialSeed model.seed
 
         ( novel, novelPath ) =
-            randomNovel random novelTree
+            randomNovel random model.path novelTree
 
         chooser =
             Maze.randomChooser random
@@ -208,7 +241,7 @@ randomMazeHtml : Model -> NovelTree -> Html msg
 randomMazeHtml model novelTree =
     let
         ( maze, pathString ) =
-            randomMaze model.seed novelTree
+            randomMaze model novelTree
 
         area =
             Maze.getArea maze

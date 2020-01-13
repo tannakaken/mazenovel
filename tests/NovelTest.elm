@@ -25,7 +25,26 @@ suite =
             [ test "make string from Novel.NovelTree" <|
                 \_ ->
                     Expect.equal
-                        (Novel.randomNovel (Random.initialSeed 0) testNovelTree)
+                        (Novel.randomNovel (Random.initialSeed 0) [] testNovelTree)
                         ( "hello", [] )
+            ]
+        , describe "Novel.pathToString"
+            [ test "make String from NovelPath" <|
+                \_ ->
+                    Expect.equal
+                        (Novel.pathToString [ 0, 2, 1 ])
+                        "0,2,1"
+            ]
+        , describe "Novel.pathFromString"
+            [ test "make NovelPath from String" <|
+                \_ ->
+                    Expect.equal
+                        (Novel.pathFromString "1,2,3")
+                        (Just [ 1, 2, 3 ])
+            , test "invalid string" <|
+                \_ ->
+                    Expect.equal
+                        (Novel.pathFromString "1,a,3")
+                        Nothing
             ]
         ]
