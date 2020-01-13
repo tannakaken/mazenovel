@@ -6254,6 +6254,9 @@ var $author$project$Main$jsonDecoder = $elm$json$Json$Decode$array(
 			$elm$json$Json$Decode$field,
 			'n',
 			$elm$json$Json$Decode$array($elm$json$Json$Decode$int))));
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
 var $elm$core$String$replace = F3(
 	function (before, after, string) {
 		return A2(
@@ -6261,7 +6264,7 @@ var $elm$core$String$replace = F3(
 			after,
 			A2($elm$core$String$split, before, string));
 	});
-var $author$project$Main$baseUrl = function (url) {
+var $author$project$Util$baseUrl = function (url) {
 	var scheme = function () {
 		var _v1 = url.protocol;
 		if (_v1.$ === 'Https') {
@@ -6280,16 +6283,17 @@ var $author$project$Main$baseUrl = function (url) {
 		}
 	}();
 	var host = url.host;
-	return _Utils_ap(
-		scheme,
-		_Utils_ap(
-			host,
-			_Utils_ap(
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				scheme,
+				host,
 				portString,
-				A3($elm$core$String$replace, 'index.html', '', url.path))));
+				A3($elm$core$String$replace, 'index.html', '', url.path)
+			]));
 };
-var $author$project$Main$jsonUrl = function (url) {
-	return $author$project$Main$baseUrl(url) + 'tree.json';
+var $author$project$Util$jsonUrl = function (url) {
+	return $author$project$Util$baseUrl(url) + 'tree.json';
 };
 var $elm$time$Time$Name = function (a) {
 	return {$: 'Name', a: a};
@@ -6582,7 +6586,7 @@ var $author$project$Main$init = F3(
 					$elm$http$Http$get(
 						{
 							expect: A2($elm$http$Http$expectJson, $author$project$Main$GotJson, $author$project$Main$jsonDecoder),
-							url: $author$project$Main$jsonUrl(url)
+							url: $author$project$Util$jsonUrl(url)
 						}));
 			}
 		}
@@ -6703,7 +6707,7 @@ var $author$project$Main$update = F2(
 					$elm$http$Http$get(
 						{
 							expect: A2($elm$http$Http$expectJson, $author$project$Main$GotJson, $author$project$Main$jsonDecoder),
-							url: $author$project$Main$jsonUrl(model.url)
+							url: $author$project$Util$jsonUrl(model.url)
 						}));
 			default:
 				var result = msg.a;
@@ -7408,8 +7412,18 @@ var $elm$html$Html$Attributes$href = function (url) {
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
-var $author$project$Main$seedLink = function (seed) {
-	var link = '/?seed=' + $elm$core$String$fromInt(seed);
+var $author$project$Util$seedUrl = F2(
+	function (url, seed) {
+		return $elm$core$String$concat(
+			_List_fromArray(
+				[
+					$author$project$Util$baseUrl(url),
+					'?seed=',
+					$elm$core$String$fromInt(seed)
+				]));
+	});
+var $author$project$Main$seedLink = function (model) {
+	var link = A2($author$project$Util$seedUrl, model.url, model.seed);
 	return A2(
 		$elm$html$Html$a,
 		_List_fromArray(
@@ -7422,8 +7436,8 @@ var $author$project$Main$seedLink = function (seed) {
 			]));
 };
 var $author$project$Main$randomMazeHtml = F2(
-	function (seed, novelTree) {
-		var _v0 = A2($author$project$Main$randomMaze, seed, novelTree);
+	function (model, novelTree) {
+		var _v0 = A2($author$project$Main$randomMaze, model.seed, novelTree);
 		var maze = _v0.a;
 		var pathString = _v0.b;
 		var area = $author$project$Maze$getArea(maze);
@@ -7461,7 +7475,7 @@ var $author$project$Main$randomMazeHtml = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$text('ブックマーク用URL:'),
-							$author$project$Main$seedLink(seed)
+							$author$project$Main$seedLink(model)
 						]))
 				]));
 	});
@@ -7479,7 +7493,7 @@ var $author$project$Main$view = function (model) {
 						return $elm$html$Html$text('loading...');
 					default:
 						var novelTree = _v0.a;
-						return A2($author$project$Main$randomMazeHtml, model.seed, novelTree);
+						return A2($author$project$Main$randomMazeHtml, model, novelTree);
 				}
 			}()
 			]),
