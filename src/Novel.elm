@@ -59,6 +59,7 @@ randomNovel seed novelPath novelTree =
 
 
 {-| NovelNodeを一つNovelTreeから取得して、小説に付け加えようとする。
+    NovelPathが不正だと、ここでArray.getがNothingを返し、それが全体の戻り値になる。
 -}
 randomNovelAux : Random.Seed -> NovelPath -> NovelTree -> Int -> Maybe ( String, NovelPath )
 randomNovelAux seed novelPath novelTree currentIndex =
@@ -66,7 +67,6 @@ randomNovelAux seed novelPath novelTree currentIndex =
 
 
 {-| NovelNodeを小説に付け加えようとする。
-TODO NovelPathをちゃんと使う
 -}
 appendNode : Random.Seed -> NovelPath -> NovelTree -> NovelNode -> Maybe ( String, NovelPath )
 appendNode seed novelPath novelTree node =
@@ -89,15 +89,25 @@ appendNode seed novelPath novelTree node =
         randomNovelAux seed novelPath novelTree nextIndex |> Maybe.map (\( restNovel, path ) -> ( h ++ restNovel, path ))
 
     else
-        let
-            indexGenerator =
-                Random.int 0 (length - 1)
+        case novelPath of
+            [] ->
+                let
+                    indexGenerator =
+                         Random.int 0 (length - 1)
 
-            ( choice, nextSeed ) =
-                Random.step indexGenerator seed
+                    ( choice, nextSeed ) =
+                        Random.step indexGenerator seed
 
-            {- Array.getは実際には必ず成功する。 -}
-            nextIndex =
-                Maybe.withDefault -1 (Array.get choice node.next)
-        in
-        randomNovelAux nextSeed novelPath novelTree nextIndex |> Maybe.map (\( restNovel, restPath ) -> ( h ++ restNovel, choice :: restPath ))
+                    {- Array.getは実際には必ず成功する。 -}
+                    nextIndex =
+                        Maybe.withDefault -1 (Array.get choice node.next)
+                in
+                randomNovelAux nextSeed novelPath novelTree nextIndex |> Maybe.map (\( restNovel, restPath ) -> ( h ++ restNovel, choice :: restPath ))
+            choice::rest ->
+                let
+                    {- novelPathが不正だとここで-1が返り、最終的にNothingが返る。 -}
+                    nextIndex =
+                        Maybe.withDefault -1 (Array.get choice node.next)
+                in
+                randomNovelAux seed rest novelTree nextIndex |> Maybe.map (\( restNovel, restPath ) -> ( h ++ restNovel, choice :: restPath ))
+                
