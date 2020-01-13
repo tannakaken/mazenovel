@@ -5,3 +5,7 @@ body {
 span.wall {
   background-color: black;
 }
+
+div.error {
+  color: red;
+}

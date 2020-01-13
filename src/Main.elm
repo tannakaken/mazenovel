@@ -82,7 +82,7 @@ init _ url key =
                 Just pathString ->
                     case Novel.pathFromString pathString of
                         Nothing ->
-                            ( Model key url (Failure "お探しの迷路は道は見つかりません。") dummySeed defaultPath
+                            ( Model key url (Failure "お探しの道は見つかりません。") dummySeed defaultPath
                             , Cmd.none
                             )
 
@@ -205,10 +205,10 @@ view model =
     , body =
         [ case model.state of
             Failure errorMessage ->
-                text errorMessage
+                div [class "error"] [text errorMessage]
 
             Loading ->
-                text "loading..."
+                div [class "loading"] [text "loading..."]
 
             Success novelTree ->
                 randomMazeHtml model novelTree
