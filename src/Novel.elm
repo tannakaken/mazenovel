@@ -59,7 +59,7 @@ randomNovel seed novelPath novelTree =
 
 
 {-| NovelNodeを一つNovelTreeから取得して、小説に付け加えようとする。
-    NovelPathが不正だと、ここでArray.getがNothingを返し、それが全体の戻り値になる。
+NovelPathが不正だと、ここでArray.getがNothingを返し、それが全体の戻り値になる。
 -}
 randomNovelAux : Random.Seed -> NovelPath -> NovelTree -> Int -> Maybe ( String, NovelPath )
 randomNovelAux seed novelPath novelTree currentIndex =
@@ -93,7 +93,7 @@ appendNode seed novelPath novelTree node =
             [] ->
                 let
                     indexGenerator =
-                         Random.int 0 (length - 1)
+                        Random.int 0 (length - 1)
 
                     ( choice, nextSeed ) =
                         Random.step indexGenerator seed
@@ -103,11 +103,11 @@ appendNode seed novelPath novelTree node =
                         Maybe.withDefault -1 (Array.get choice node.next)
                 in
                 randomNovelAux nextSeed novelPath novelTree nextIndex |> Maybe.map (\( restNovel, restPath ) -> ( h ++ restNovel, choice :: restPath ))
-            choice::rest ->
+
+            choice :: rest ->
                 let
                     {- novelPathが不正だとここで-1が返り、最終的にNothingが返る。 -}
                     nextIndex =
                         Maybe.withDefault -1 (Array.get choice node.next)
                 in
                 randomNovelAux seed rest novelTree nextIndex |> Maybe.map (\( restNovel, restPath ) -> ( h ++ restNovel, choice :: restPath ))
-                
