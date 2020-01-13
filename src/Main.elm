@@ -14,7 +14,7 @@ import Route exposing (Route(..), urlToRoute)
 import Task
 import Time
 import Url exposing (Url)
-import Util exposing (..)
+import Util exposing (jsonUrl, seedUrl)
 
 
 
@@ -224,7 +224,7 @@ seedLink : Model -> Html msg
 seedLink model =
     let
         link =
-            seedUrl model.url model.seed
+            seedUrl model.seed model.url
     in
     a [ href link ] [ text link ]
 
