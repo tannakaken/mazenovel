@@ -71,7 +71,9 @@ urlToRoute url =
 
 
 dummySeed : Int
-dummySeed = 0
+dummySeed =
+    0
+
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
@@ -233,7 +235,8 @@ view model =
 randomMaze : Int -> NovelTree -> ( Maze, String )
 randomMaze seed novelTree =
     let
-        random = Random.initialSeed seed    
+        random =
+            Random.initialSeed seed
 
         ( novel, novelPath ) =
             randomNovel random novelTree
@@ -265,12 +268,15 @@ randomMazeHtml seed novelTree =
         , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink seed ]
         ]
 
+
 seedLink : Int -> Html msg
 seedLink seed =
-    let 
-      link = "/?seed=" ++ String.fromInt seed
+    let
+        link =
+            "/?seed=" ++ String.fromInt seed
     in
-      a [ href link ] [text link]
+    a [ href link ] [ text link ]
+
 
 mazeRows : Area -> Maze -> List (Html msg)
 mazeRows area maze =
