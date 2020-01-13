@@ -12,9 +12,10 @@ import Novel exposing (NovelNode, NovelTree, randomNovel)
 import Random
 import Task
 import Time
-import Url
+import Url exposing (Url)
 import Url.Parser as UP exposing (Parser, query, s)
 import Url.Parser.Query as Q
+import Util exposing (..)
 
 
 
@@ -39,7 +40,7 @@ main =
 
 type alias Model =
     { key : Nav.Key
-    , url : Url.Url
+    , url : Url
     , state : State
     , seed : Int
     }
@@ -65,7 +66,7 @@ routeParser =
         [ UP.map Top (query <| Q.int "seed") ]
 
 
-urlToRoute : Url.Url -> Maybe Route
+urlToRoute : Url -> Maybe Route
 urlToRoute url =
     UP.parse routeParser url
 
@@ -75,7 +76,7 @@ dummySeed =
     0
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     case urlToRoute url of
         Nothing ->
@@ -100,40 +101,6 @@ init _ url key =
 
 
 
--- JSON
-
-
-jsonUrl : Url.Url -> String
-jsonUrl url =
-    baseUrl url ++ "tree.json"
-
-
-baseUrl : Url.Url -> String
-baseUrl url =
-    let
-        scheme =
-            case url.protocol of
-                Url.Https ->
-                    "https://"
-
-                Url.Http ->
-                    "http://"
-
-        host =
-            url.host
-
-        portString =
-            case url.port_ of
-                Nothing ->
-                    ""
-
-                Just portNum ->
-                    ":" ++ String.fromInt portNum
-    in
-    scheme ++ host ++ portString ++ String.replace "index.html" "" url.path
-
-
-
 -- UPDATE
 
 
@@ -148,7 +115,7 @@ jsonDecoder =
 
 type Msg
     = LinkClicked Browser.UrlRequest
-    | UrlChanged Url.Url
+    | UrlChanged Url
     | GotTime Time.Posix
     | GotJson (Result Http.Error NovelTree)
 
@@ -227,7 +194,7 @@ view model =
                 text "loading..."
 
             Success novelTree ->
-                randomMazeHtml model.seed novelTree
+                randomMazeHtml model novelTree
         ]
     }
 
@@ -253,11 +220,11 @@ randomMaze seed novelTree =
     ( maze, pathString )
 
 
-randomMazeHtml : Int -> NovelTree -> Html msg
-randomMazeHtml seed novelTree =
+randomMazeHtml : Model -> NovelTree -> Html msg
+randomMazeHtml model novelTree =
     let
         ( maze, pathString ) =
-            randomMaze seed novelTree
+            randomMaze model.seed novelTree
 
         area =
             Maze.getArea maze
@@ -265,15 +232,15 @@ randomMazeHtml seed novelTree =
     article [ class "main" ]
         [ div [ class "maze" ] <| mazeRows area maze
         , div [ class "path" ] [ text pathString ]
-        , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink seed ]
+        , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink model ]
         ]
 
 
-seedLink : Int -> Html msg
-seedLink seed =
+seedLink : Model -> Html msg
+seedLink model =
     let
         link =
-            "/?seed=" ++ String.fromInt seed
+            seedUrl model.url model.seed
     in
     a [ href link ] [ text link ]
 
