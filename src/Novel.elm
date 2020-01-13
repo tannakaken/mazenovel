@@ -1,8 +1,7 @@
-module Novel exposing (NovelNode, NovelTree, randomNovel)
+module Novel exposing (NovelNode, NovelTree, randomNovel, pathToString, pathFromString)
 
 import Array exposing (Array)
 import Random
-
 
 type alias NovelTree =
     Array NovelNode
@@ -15,6 +14,14 @@ type alias NovelNode =
 
 type alias NovelPath =
     List Int
+
+pathToString : NovelPath -> String
+pathToString path =
+  List.map String.fromInt path |> String.join ","
+
+pathFromString : String -> NovelPath
+pathFromString str =
+  String.split "," str |> List.map (String.toInt >> Maybe.withDefault 0)
 
 
 randomNovel : Random.Seed -> NovelTree -> (String, NovelPath)
