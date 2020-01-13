@@ -5462,6 +5462,7 @@ var $author$project$Novel$pathFromString = function (str) {
 			$elm$core$String$toInt,
 			A2($elm$core$String$split, ',', str)));
 };
+var $author$project$Main$pathNotFound = 'お探しの道は見つかりませんでした。';
 var $author$project$Main$GotJson = function (a) {
 	return {$: 'GotJson', a: a};
 };
@@ -6741,7 +6742,7 @@ var $author$project$Main$init = F3(
 					$author$project$Main$Model,
 					key,
 					url,
-					$author$project$Main$Failure('お探しのページは見つかりません。'),
+					$author$project$Main$Failure('お探しのページは見つかりませんでした。'),
 					$author$project$Main$dummySeed,
 					$author$project$Main$defaultPath),
 				$elm$core$Platform$Cmd$none);
@@ -6759,7 +6760,7 @@ var $author$project$Main$init = F3(
 							$author$project$Main$Model,
 							key,
 							url,
-							$author$project$Main$Failure('お探しの迷路は道は見つかりません。'),
+							$author$project$Main$Failure($author$project$Main$pathNotFound),
 							$author$project$Main$dummySeed,
 							$author$project$Main$defaultPath),
 						$elm$core$Platform$Cmd$none);
@@ -6908,7 +6909,6 @@ var $author$project$Main$update = F2(
 				}
 		}
 	});
-var $elm$html$Html$article = _VirtualDom_node('article');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6919,6 +6919,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$article = _VirtualDom_node('article');
 var $author$project$Maze$Area = F4(
 	function (top, right, bottom, left) {
 		return {bottom: bottom, left: left, right: right, top: top};
@@ -7066,6 +7067,16 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Maze$empty = $elm$core$Dict$empty;
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
@@ -7479,6 +7490,24 @@ var $author$project$Maze$randomChooser = function (seed) {
 	};
 	return $author$project$Maze$Chooser(chooser);
 };
+var $author$project$Main$novelToMaze = F2(
+	function (random, _v0) {
+		var novel = _v0.a;
+		var novelPath = _v0.b;
+		var pathString = $author$project$Novel$pathToString(novelPath);
+		var chooser = $author$project$Maze$randomChooser(random);
+		var maze = A2($author$project$Maze$novelPath, chooser, novel);
+		return _Utils_Tuple2(maze, pathString);
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
 var $elm$core$Array$getHelp = F3(
@@ -7522,47 +7551,57 @@ var $elm$core$Array$length = function (_v0) {
 	var len = _v0.a;
 	return len;
 };
-var $author$project$Novel$randomNovelAux = F4(
-	function (seed, novelPath, novelTree, currentIndex) {
-		var currentNode = A2($elm$core$Array$get, currentIndex, novelTree);
-		if (currentNode.$ === 'Nothing') {
-			return _Utils_Tuple2('', _List_Nil);
+var $author$project$Novel$appendNode = F4(
+	function (seed, novelPath, novelTree, node) {
+		var length = $elm$core$Array$length(node.next);
+		var h = A2($elm$core$Maybe$withDefault, '', node.node);
+		if (!length) {
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(h, _List_Nil));
 		} else {
-			var node = currentNode.a;
-			var length = $elm$core$Array$length(node.next);
-			var h = A2($elm$core$Maybe$withDefault, '', node.node);
-			if (!length) {
-				return _Utils_Tuple2(h, _List_Nil);
+			if (length === 1) {
+				var nextIndex = A2(
+					$elm$core$Maybe$withDefault,
+					-1,
+					A2($elm$core$Array$get, 0, node.next));
+				return A2(
+					$elm$core$Maybe$map,
+					function (_v0) {
+						var restNovel = _v0.a;
+						var path = _v0.b;
+						return _Utils_Tuple2(
+							_Utils_ap(h, restNovel),
+							path);
+					},
+					A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, nextIndex));
 			} else {
-				if (length === 1) {
-					var nextIndex = A2(
-						$elm$core$Maybe$withDefault,
-						-1,
-						A2($elm$core$Array$get, 0, node.next));
-					var _v1 = A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, nextIndex);
-					var restNovel = _v1.a;
-					var path = _v1.b;
-					return _Utils_Tuple2(
-						_Utils_ap(h, restNovel),
-						path);
-				} else {
-					var indexGenerator = A2($elm$random$Random$int, 0, length - 1);
-					var _v2 = A2($elm$random$Random$step, indexGenerator, seed);
-					var choice = _v2.a;
-					var nextSeed = _v2.b;
-					var nextIndex = A2(
-						$elm$core$Maybe$withDefault,
-						-1,
-						A2($elm$core$Array$get, choice, node.next));
-					var _v3 = A4($author$project$Novel$randomNovelAux, nextSeed, novelPath, novelTree, nextIndex);
-					var restNovel = _v3.a;
-					var restPath = _v3.b;
-					return _Utils_Tuple2(
-						_Utils_ap(h, restNovel),
-						A2($elm$core$List$cons, choice, restPath));
-				}
+				var indexGenerator = A2($elm$random$Random$int, 0, length - 1);
+				var _v1 = A2($elm$random$Random$step, indexGenerator, seed);
+				var choice = _v1.a;
+				var nextSeed = _v1.b;
+				var nextIndex = A2(
+					$elm$core$Maybe$withDefault,
+					-1,
+					A2($elm$core$Array$get, choice, node.next));
+				return A2(
+					$elm$core$Maybe$map,
+					function (_v2) {
+						var restNovel = _v2.a;
+						var restPath = _v2.b;
+						return _Utils_Tuple2(
+							_Utils_ap(h, restNovel),
+							A2($elm$core$List$cons, choice, restPath));
+					},
+					A4($author$project$Novel$randomNovelAux, nextSeed, novelPath, novelTree, nextIndex));
 			}
 		}
+	});
+var $author$project$Novel$randomNovelAux = F4(
+	function (seed, novelPath, novelTree, currentIndex) {
+		return A2(
+			$elm$core$Maybe$andThen,
+			A3($author$project$Novel$appendNode, seed, novelPath, novelTree),
+			A2($elm$core$Array$get, currentIndex, novelTree));
 	});
 var $author$project$Novel$randomNovel = F3(
 	function (seed, novelPath, novelTree) {
@@ -7571,13 +7610,10 @@ var $author$project$Novel$randomNovel = F3(
 var $author$project$Main$randomMaze = F2(
 	function (model, novelTree) {
 		var random = $elm$random$Random$initialSeed(model.seed);
-		var chooser = $author$project$Maze$randomChooser(random);
-		var _v0 = A3($author$project$Novel$randomNovel, random, model.path, novelTree);
-		var novel = _v0.a;
-		var novelPath = _v0.b;
-		var maze = A2($author$project$Maze$novelPath, chooser, novel);
-		var pathString = $author$project$Novel$pathToString(novelPath);
-		return _Utils_Tuple2(maze, pathString);
+		return A2(
+			$elm$core$Maybe$map,
+			$author$project$Main$novelToMaze(random),
+			A3($author$project$Novel$randomNovel, random, model.path, novelTree));
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$Attributes$href = function (url) {
@@ -7612,46 +7648,60 @@ var $author$project$Main$seedLink = function (model) {
 var $author$project$Main$randomMazeHtml = F2(
 	function (model, novelTree) {
 		var _v0 = A2($author$project$Main$randomMaze, model, novelTree);
-		var maze = _v0.a;
-		var pathString = _v0.b;
-		var area = $author$project$Maze$getArea(maze);
-		return A2(
-			$elm$html$Html$article,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('main')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('maze')
-						]),
-					A2($author$project$Main$mazeRows, area, maze)),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('path')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(pathString)
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('seed')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('ブックマーク用URL:'),
-							$author$project$Main$seedLink(model)
-						]))
-				]));
+		if (_v0.$ === 'Nothing') {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('error')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text($author$project$Main$pathNotFound)
+					]));
+		} else {
+			var _v1 = _v0.a;
+			var maze = _v1.a;
+			var pathString = _v1.b;
+			var area = $author$project$Maze$getArea(maze);
+			return A2(
+				$elm$html$Html$article,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('main')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('maze')
+							]),
+						A2($author$project$Main$mazeRows, area, maze)),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('path')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(pathString)
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('seed')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('ブックマーク用URL:'),
+								$author$project$Main$seedLink(model)
+							]))
+					]));
+		}
 	});
 var $author$project$Main$view = function (model) {
 	return {
@@ -7662,9 +7712,27 @@ var $author$project$Main$view = function (model) {
 				switch (_v0.$) {
 					case 'Failure':
 						var errorMessage = _v0.a;
-						return $elm$html$Html$text(errorMessage);
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('error')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(errorMessage)
+								]));
 					case 'Loading':
-						return $elm$html$Html$text('loading...');
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('loading')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('loading...')
+								]));
 					default:
 						var novelTree = _v0.a;
 						return A2($author$project$Main$randomMazeHtml, model, novelTree);
