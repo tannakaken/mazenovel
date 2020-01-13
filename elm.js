@@ -7592,24 +7592,43 @@ var $author$project$Novel$appendNode = F4(
 					},
 					A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, nextIndex));
 			} else {
-				var indexGenerator = A2($elm$random$Random$int, 0, length - 1);
-				var _v1 = A2($elm$random$Random$step, indexGenerator, seed);
-				var choice = _v1.a;
-				var nextSeed = _v1.b;
-				var nextIndex = A2(
-					$elm$core$Maybe$withDefault,
-					-1,
-					A2($elm$core$Array$get, choice, node.next));
-				return A2(
-					$elm$core$Maybe$map,
-					function (_v2) {
-						var restNovel = _v2.a;
-						var restPath = _v2.b;
-						return _Utils_Tuple2(
-							_Utils_ap(h, restNovel),
-							A2($elm$core$List$cons, choice, restPath));
-					},
-					A4($author$project$Novel$randomNovelAux, nextSeed, novelPath, novelTree, nextIndex));
+				if (!novelPath.b) {
+					var indexGenerator = A2($elm$random$Random$int, 0, length - 1);
+					var _v2 = A2($elm$random$Random$step, indexGenerator, seed);
+					var choice = _v2.a;
+					var nextSeed = _v2.b;
+					var nextIndex = A2(
+						$elm$core$Maybe$withDefault,
+						-1,
+						A2($elm$core$Array$get, choice, node.next));
+					return A2(
+						$elm$core$Maybe$map,
+						function (_v3) {
+							var restNovel = _v3.a;
+							var restPath = _v3.b;
+							return _Utils_Tuple2(
+								_Utils_ap(h, restNovel),
+								A2($elm$core$List$cons, choice, restPath));
+						},
+						A4($author$project$Novel$randomNovelAux, nextSeed, novelPath, novelTree, nextIndex));
+				} else {
+					var choice = novelPath.a;
+					var rest = novelPath.b;
+					var nextIndex = A2(
+						$elm$core$Maybe$withDefault,
+						-1,
+						A2($elm$core$Array$get, choice, node.next));
+					return A2(
+						$elm$core$Maybe$map,
+						function (_v4) {
+							var restNovel = _v4.a;
+							var restPath = _v4.b;
+							return _Utils_Tuple2(
+								_Utils_ap(h, restNovel),
+								A2($elm$core$List$cons, choice, restPath));
+						},
+						A4($author$project$Novel$randomNovelAux, seed, rest, novelTree, nextIndex));
+				}
 			}
 		}
 	});
