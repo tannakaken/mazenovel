@@ -3,7 +3,7 @@ module Main exposing (main)
 import Array exposing (Array)
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (..)
+import Html exposing (Html, div, span, a, text, article)
 import Html.Attributes exposing (class, href)
 import Http
 import Json.Decode as JD exposing (Decoder)
@@ -13,7 +13,7 @@ import Random
 import Task
 import Time
 import Url exposing (Url)
-import Url.Parser as UP exposing (Parser, query, s)
+import Url.Parser as UP exposing (Parser, s, (</>), (<?>), top)
 import Url.Parser.Query as Q
 import Util exposing (..)
 
@@ -59,16 +59,21 @@ type State
 type Route
     = Top (Maybe Int)
 
+pathParser : Url -> Parser a a
+pathParser url =
+    String.split "/" url.path |> List.filter (\x -> String.isEmpty x |> not)
+                              |> List.map s 
+                              |> List.foldl (</>) top
 
-routeParser : Parser (Route -> a) a
-routeParser =
+routeParser : Url -> Parser (Route -> a) a
+routeParser url =
     UP.oneOf
-        [ UP.map Top (query <| Q.int "seed") ]
+        [ UP.map Top (pathParser url <?> Q.int "seed" ) ]
 
 
 urlToRoute : Url -> Maybe Route
 urlToRoute url =
-    UP.parse routeParser url
+    UP.parse (routeParser url) url
 
 
 dummySeed : Int
