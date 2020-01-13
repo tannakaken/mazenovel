@@ -6532,6 +6532,76 @@ var $elm$url$Url$Parser$oneOf = function (parsers) {
 				parsers);
 		});
 };
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$url$Url$Parser$s = function (str) {
+	return $elm$url$Url$Parser$Parser(
+		function (_v0) {
+			var visited = _v0.visited;
+			var unvisited = _v0.unvisited;
+			var params = _v0.params;
+			var frag = _v0.frag;
+			var value = _v0.value;
+			if (!unvisited.b) {
+				return _List_Nil;
+			} else {
+				var next = unvisited.a;
+				var rest = unvisited.b;
+				return _Utils_eq(next, str) ? _List_fromArray(
+					[
+						A5(
+						$elm$url$Url$Parser$State,
+						A2($elm$core$List$cons, next, visited),
+						rest,
+						params,
+						frag,
+						value)
+					]) : _List_Nil;
+			}
+		});
+};
+var $elm$url$Url$Parser$slash = F2(
+	function (_v0, _v1) {
+		var parseBefore = _v0.a;
+		var parseAfter = _v1.a;
+		return $elm$url$Url$Parser$Parser(
+			function (state) {
+				return A2(
+					$elm$core$List$concatMap,
+					parseAfter,
+					parseBefore(state));
+			});
+	});
+var $elm$url$Url$Parser$top = $elm$url$Url$Parser$Parser(
+	function (state) {
+		return _List_fromArray(
+			[state]);
+	});
+var $author$project$Main$pathParser = function (url) {
+	return A3(
+		$elm$core$List$foldl,
+		$elm$url$Url$Parser$slash,
+		$elm$url$Url$Parser$top,
+		A2(
+			$elm$core$List$map,
+			$elm$url$Url$Parser$s,
+			A2(
+				$elm$core$List$filter,
+				function (x) {
+					return !$elm$core$String$isEmpty(x);
+				},
+				A2($elm$core$String$split, '/', url.path))));
+};
 var $elm$url$Url$Parser$query = function (_v0) {
 	var queryParser = _v0.a;
 	return $elm$url$Url$Parser$Parser(
@@ -6554,17 +6624,31 @@ var $elm$url$Url$Parser$query = function (_v0) {
 				]);
 		});
 };
-var $author$project$Main$routeParser = $elm$url$Url$Parser$oneOf(
-	_List_fromArray(
-		[
-			A2(
-			$elm$url$Url$Parser$map,
-			$author$project$Main$Top,
-			$elm$url$Url$Parser$query(
-				$elm$url$Url$Parser$Query$int('seed')))
-		]));
+var $elm$url$Url$Parser$questionMark = F2(
+	function (parser, queryParser) {
+		return A2(
+			$elm$url$Url$Parser$slash,
+			parser,
+			$elm$url$Url$Parser$query(queryParser));
+	});
+var $author$project$Main$routeParser = function (url) {
+	return $elm$url$Url$Parser$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$url$Url$Parser$map,
+				$author$project$Main$Top,
+				A2(
+					$elm$url$Url$Parser$questionMark,
+					$author$project$Main$pathParser(url),
+					$elm$url$Url$Parser$Query$int('seed')))
+			]));
+};
 var $author$project$Main$urlToRoute = function (url) {
-	return A2($elm$url$Url$Parser$parse, $author$project$Main$routeParser, url);
+	return A2(
+		$elm$url$Url$Parser$parse,
+		$author$project$Main$routeParser(url),
+		url);
 };
 var $author$project$Main$init = F3(
 	function (_v0, url, key) {
@@ -7040,7 +7124,6 @@ var $author$project$Maze$inArea = function (_v0) {
 	var y = _v0.b;
 	return y >= 0;
 };
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Maze$canDig = F3(
 	function (maze, previousCell, cell) {
 		return $author$project$Maze$inArea(cell) && ((!A2($author$project$Maze$onExistingPath, maze, cell)) && A3($author$project$Maze$doesBecomeSinglePath, maze, previousCell, cell));
