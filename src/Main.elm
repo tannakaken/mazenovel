@@ -10,7 +10,7 @@ import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Cell, Maze)
 import Novel exposing (NovelNode, NovelTree, randomNovel)
 import Random
-import Route exposing (Route(..), Query, urlToRoute)
+import Route exposing (Query, Route(..), urlToRoute)
 import Task
 import Time
 import Url exposing (Url)
