@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Array exposing (Array, foldr, get, length)
+import Array exposing (Array)
 import Browser
 import Browser.Navigation as Nav
 import Html exposing (..)
@@ -8,6 +8,7 @@ import Html.Attributes exposing (class)
 import Http
 import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Cell, Maze)
+import Novel exposing (NovelNode, NovelTree, randomNovel)
 import Random
 import Task
 import Time
@@ -47,17 +48,7 @@ type alias Model =
 type State
     = Failure String
     | Loading
-    | Success NovelMaze
-
-
-type alias NovelMaze =
-    Array NovelNode
-
-
-type alias NovelNode =
-    { node : Maybe String
-    , next : Array Int
-    }
+    | Success NovelTree
 
 
 
@@ -141,7 +132,7 @@ baseUrl url =
 -- UPDATE
 
 
-jsonDecoder : Decoder NovelMaze
+jsonDecoder : Decoder NovelTree
 jsonDecoder =
     JD.array
         (JD.map2 NovelNode
@@ -154,7 +145,7 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | GotTime Time.Posix
-    | GotJson (Result Http.Error NovelMaze)
+    | GotJson (Result Http.Error NovelTree)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -181,8 +172,8 @@ update msg model =
 
         GotJson result ->
             case result of
-                Ok novelMaze ->
-                    ( { model | state = Success novelMaze }, Cmd.none )
+                Ok novelTree ->
+                    ( { model | state = Success novelTree }, Cmd.none )
 
                 Err err ->
                     ( { model | state = Failure (errorToString err) }, Cmd.none )
@@ -230,66 +221,25 @@ view model =
             Loading ->
                 text "loading..."
 
-            Success novelMaze ->
-                randomMazeHtml model.seed novelMaze
+            Success novelTree ->
+                randomMazeHtml model.seed novelTree
         ]
     }
 
 
-randomNovel : Random.Seed -> NovelMaze -> String
-randomNovel seed novelMaze =
-    randomNovelAux seed novelMaze 0
-
-
-randomNovelAux : Random.Seed -> NovelMaze -> Int -> String
-randomNovelAux seed novelMaze currentIndex =
-    let
-        currentNode =
-            get currentIndex novelMaze
+randomMaze : Random.Seed -> NovelTree -> Maybe Maze
+randomMaze seed novelTree =
+    let 
+        (novel, _) = randomNovel seed novelTree
     in
-    case currentNode of
-        Nothing ->
-            ""
-
-        Just node ->
-            (case node.node of
-                Nothing ->
-                    ""
-
-                Just c ->
-                    c
-            )
-                ++ (if length node.next == 0 then
-                        ""
-
-                    else
-                        let
-                            length =
-                                Array.length node.next
-
-                            indexGenerator =
-                                Random.int 0 (length - 1)
-
-                            ( index, nextSeed ) =
-                                Random.step indexGenerator seed
-
-                            nextIndex =
-                                Maybe.withDefault 0 (get index node.next)
-                        in
-                        randomNovelAux nextSeed novelMaze nextIndex
-                   )
+        Maze.novelPath (Maze.randomChooser seed) novel
 
 
-randomMaze : Random.Seed -> NovelMaze -> Maybe Maze.Maze
-randomMaze seed novelMaze =
-    randomNovel seed novelMaze |> Maze.novelPath (Maze.randomChooser seed)
-
-
-randomMazeHtml : Random.Seed -> NovelMaze -> Html msg
-randomMazeHtml seed novelMaze =
+randomMazeHtml : Random.Seed -> NovelTree -> Html msg
+randomMazeHtml seed novelTree =
     let
         maybeMaze =
-            randomMaze seed novelMaze
+            randomMaze seed novelTree
     in
     case maybeMaze of
         Nothing ->
