@@ -5425,6 +5425,43 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$application = _Browser_application;
+var $author$project$Main$Failure = function (a) {
+	return {$: 'Failure', a: a};
+};
+var $author$project$Main$Model = F5(
+	function (key, url, state, seed, path) {
+		return {key: key, path: path, seed: seed, state: state, url: url};
+	});
+var $author$project$Main$defaultPath = _List_Nil;
+var $author$project$Main$dummySeed = 0;
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var $author$project$Novel$combineMaybe = A2(
+	$elm$core$List$foldr,
+	$elm$core$Maybe$map2($elm$core$List$cons),
+	$elm$core$Maybe$Just(_List_Nil));
+var $author$project$Novel$pathFromString = function (str) {
+	return $author$project$Novel$combineMaybe(
+		A2(
+			$elm$core$List$map,
+			$elm$core$String$toInt,
+			A2($elm$core$String$split, ',', str)));
+};
 var $author$project$Main$GotJson = function (a) {
 	return {$: 'GotJson', a: a};
 };
@@ -5432,11 +5469,6 @@ var $author$project$Main$GotTime = function (a) {
 	return {$: 'GotTime', a: a};
 };
 var $author$project$Main$Loading = {$: 'Loading'};
-var $author$project$Main$Model = F4(
-	function (key, url, state, seed) {
-		return {key: key, seed: seed, state: state, url: url};
-	});
-var $author$project$Main$dummySeed = 0;
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6311,6 +6343,23 @@ var $elm$time$Time$Posix = function (a) {
 };
 var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $author$project$Main$seedInitialize = F4(
+	function (url, key, path, maybeSeed) {
+		if (maybeSeed.$ === 'Nothing') {
+			return _Utils_Tuple2(
+				A5($author$project$Main$Model, key, url, $author$project$Main$Loading, $author$project$Main$dummySeed, path),
+				A2($elm$core$Task$perform, $author$project$Main$GotTime, $elm$time$Time$now));
+		} else {
+			var seed = maybeSeed.a;
+			return _Utils_Tuple2(
+				A5($author$project$Main$Model, key, url, $author$project$Main$Loading, seed, path),
+				$elm$http$Http$get(
+					{
+						expect: A2($elm$http$Http$expectJson, $author$project$Main$GotJson, $author$project$Main$jsonDecoder),
+						url: $author$project$Util$jsonUrl(url)
+					}));
+		}
+	});
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
 		return {frag: frag, params: params, unvisited: unvisited, value: value, visited: visited};
@@ -6430,6 +6479,10 @@ var $elm$url$Url$Parser$parse = F2(
 					url.fragment,
 					$elm$core$Basics$identity)));
 	});
+var $author$project$Route$Query = F2(
+	function (seed, path) {
+		return {path: path, seed: seed};
+	});
 var $author$project$Route$Top = function (a) {
 	return {$: 'Top', a: a};
 };
@@ -6502,6 +6555,18 @@ var $elm$url$Url$Parser$map = F2(
 					$elm$url$Url$Parser$mapState(value),
 					parseArg(
 						A5($elm$url$Url$Parser$State, visited, unvisited, params, frag, subValue)));
+			});
+	});
+var $elm$url$Url$Parser$Query$map2 = F3(
+	function (func, _v0, _v1) {
+		var a = _v0.a;
+		var b = _v1.a;
+		return $elm$url$Url$Parser$Internal$Parser(
+			function (dict) {
+				return A2(
+					func,
+					a(dict),
+					b(dict));
 			});
 	});
 var $elm$core$List$append = F2(
@@ -6631,6 +6696,19 @@ var $elm$url$Url$Parser$questionMark = F2(
 			parser,
 			$elm$url$Url$Parser$query(queryParser));
 	});
+var $elm$url$Url$Parser$Query$string = function (key) {
+	return A2(
+		$elm$url$Url$Parser$Query$custom,
+		key,
+		function (stringList) {
+			if (stringList.b && (!stringList.b.b)) {
+				var str = stringList.a;
+				return $elm$core$Maybe$Just(str);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		});
+};
 var $author$project$Route$routeParser = function (url) {
 	return $elm$url$Url$Parser$oneOf(
 		_List_fromArray(
@@ -6641,7 +6719,11 @@ var $author$project$Route$routeParser = function (url) {
 				A2(
 					$elm$url$Url$Parser$questionMark,
 					$author$project$Route$pathParser(url),
-					$elm$url$Url$Parser$Query$int('seed')))
+					A3(
+						$elm$url$Url$Parser$Query$map2,
+						$author$project$Route$Query,
+						$elm$url$Url$Parser$Query$int('seed'),
+						$elm$url$Url$Parser$Query$string('path'))))
 			]));
 };
 var $author$project$Route$urlToRoute = function (url) {
@@ -6655,23 +6737,36 @@ var $author$project$Main$init = F3(
 		var _v1 = $author$project$Route$urlToRoute(url);
 		if (_v1.$ === 'Nothing') {
 			return _Utils_Tuple2(
-				A4($author$project$Main$Model, key, url, $author$project$Main$Loading, $author$project$Main$dummySeed),
-				A2($elm$core$Task$perform, $author$project$Main$GotTime, $elm$time$Time$now));
+				A5(
+					$author$project$Main$Model,
+					key,
+					url,
+					$author$project$Main$Failure('お探しのページは見つかりません。'),
+					$author$project$Main$dummySeed,
+					$author$project$Main$defaultPath),
+				$elm$core$Platform$Cmd$none);
 		} else {
-			var maybeSeed = _v1.a.a;
-			if (maybeSeed.$ === 'Nothing') {
-				return _Utils_Tuple2(
-					A4($author$project$Main$Model, key, url, $author$project$Main$Loading, $author$project$Main$dummySeed),
-					A2($elm$core$Task$perform, $author$project$Main$GotTime, $elm$time$Time$now));
+			var query = _v1.a.a;
+			var _v2 = query.path;
+			if (_v2.$ === 'Nothing') {
+				return A4($author$project$Main$seedInitialize, url, key, $author$project$Main$defaultPath, query.seed);
 			} else {
-				var seed = maybeSeed.a;
-				return _Utils_Tuple2(
-					A4($author$project$Main$Model, key, url, $author$project$Main$Loading, seed),
-					$elm$http$Http$get(
-						{
-							expect: A2($elm$http$Http$expectJson, $author$project$Main$GotJson, $author$project$Main$jsonDecoder),
-							url: $author$project$Util$jsonUrl(url)
-						}));
+				var pathString = _v2.a;
+				var _v3 = $author$project$Novel$pathFromString(pathString);
+				if (_v3.$ === 'Nothing') {
+					return _Utils_Tuple2(
+						A5(
+							$author$project$Main$Model,
+							key,
+							url,
+							$author$project$Main$Failure('お探しの迷路は道は見つかりません。'),
+							$author$project$Main$dummySeed,
+							$author$project$Main$defaultPath),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var path = _v3.a;
+					return A4($author$project$Main$seedInitialize, url, key, path, query.seed);
+				}
 			}
 		}
 	});
@@ -6679,9 +6774,6 @@ var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
-};
-var $author$project$Main$Failure = function (a) {
-	return {$: 'Failure', a: a};
 };
 var $author$project$Main$Success = function (a) {
 	return {$: 'Success', a: a};
@@ -6696,15 +6788,14 @@ var $author$project$Main$errorToString = function (err) {
 		case 'NetworkError':
 			return 'ネットワークがおかしいです';
 		case 'BadStatus':
-			return 'ステータスがおかしいです';
+			var status = err.a;
+			return (status === 400) ? '不正なリクエストです。' : ((status === 404) ? 'お探しのページは存在しません。' : ((status === 500) ? 'サーバー内部エラーが発生しました。' : 'サーバーエラーが発生しました。'));
 		default:
 			var message = err.a;
 			return message;
 	}
 };
 var $elm$browser$Browser$Navigation$load = _Browser_load;
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$time$Time$posixToMillis = function (_v0) {
 	var millis = _v0.a;
 	return millis;
@@ -7431,8 +7522,8 @@ var $elm$core$Array$length = function (_v0) {
 	var len = _v0.a;
 	return len;
 };
-var $author$project$Novel$randomNovelAux = F3(
-	function (seed, novelTree, currentIndex) {
+var $author$project$Novel$randomNovelAux = F4(
+	function (seed, novelPath, novelTree, currentIndex) {
 		var currentNode = A2($elm$core$Array$get, currentIndex, novelTree);
 		if (currentNode.$ === 'Nothing') {
 			return _Utils_Tuple2('', _List_Nil);
@@ -7446,9 +7537,9 @@ var $author$project$Novel$randomNovelAux = F3(
 				if (length === 1) {
 					var nextIndex = A2(
 						$elm$core$Maybe$withDefault,
-						0,
+						-1,
 						A2($elm$core$Array$get, 0, node.next));
-					var _v1 = A3($author$project$Novel$randomNovelAux, seed, novelTree, nextIndex);
+					var _v1 = A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, nextIndex);
 					var restNovel = _v1.a;
 					var path = _v1.b;
 					return _Utils_Tuple2(
@@ -7461,9 +7552,9 @@ var $author$project$Novel$randomNovelAux = F3(
 					var nextSeed = _v2.b;
 					var nextIndex = A2(
 						$elm$core$Maybe$withDefault,
-						0,
+						-1,
 						A2($elm$core$Array$get, choice, node.next));
-					var _v3 = A3($author$project$Novel$randomNovelAux, nextSeed, novelTree, nextIndex);
+					var _v3 = A4($author$project$Novel$randomNovelAux, nextSeed, novelPath, novelTree, nextIndex);
 					var restNovel = _v3.a;
 					var restPath = _v3.b;
 					return _Utils_Tuple2(
@@ -7473,15 +7564,15 @@ var $author$project$Novel$randomNovelAux = F3(
 			}
 		}
 	});
-var $author$project$Novel$randomNovel = F2(
-	function (seed, novelTree) {
-		return A3($author$project$Novel$randomNovelAux, seed, novelTree, 0);
+var $author$project$Novel$randomNovel = F3(
+	function (seed, novelPath, novelTree) {
+		return A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, 0);
 	});
 var $author$project$Main$randomMaze = F2(
-	function (seed, novelTree) {
-		var random = $elm$random$Random$initialSeed(seed);
+	function (model, novelTree) {
+		var random = $elm$random$Random$initialSeed(model.seed);
 		var chooser = $author$project$Maze$randomChooser(random);
-		var _v0 = A2($author$project$Novel$randomNovel, random, novelTree);
+		var _v0 = A3($author$project$Novel$randomNovel, random, model.path, novelTree);
 		var novel = _v0.a;
 		var novelPath = _v0.b;
 		var maze = A2($author$project$Maze$novelPath, chooser, novel);
@@ -7520,7 +7611,7 @@ var $author$project$Main$seedLink = function (model) {
 };
 var $author$project$Main$randomMazeHtml = F2(
 	function (model, novelTree) {
-		var _v0 = A2($author$project$Main$randomMaze, model.seed, novelTree);
+		var _v0 = A2($author$project$Main$randomMaze, model, novelTree);
 		var maze = _v0.a;
 		var pathString = _v0.b;
 		var area = $author$project$Maze$getArea(maze);
@@ -7571,7 +7662,7 @@ var $author$project$Main$view = function (model) {
 				switch (_v0.$) {
 					case 'Failure':
 						var errorMessage = _v0.a;
-						return $elm$html$Html$text('データのロードに失敗しました:' + errorMessage);
+						return $elm$html$Html$text(errorMessage);
 					case 'Loading':
 						return $elm$html$Html$text('loading...');
 					default:
