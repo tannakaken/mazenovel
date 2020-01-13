@@ -310,5 +310,5 @@ mazeCell cell maze =
         Nothing ->
             span [ class "wall" ] [ text "\u{3000}" ]
 
-        Just str ->
-            span [ class "path" ] [ text str ]
+        Just char ->
+            span [ class "path" ] [ String.fromChar char |> text ]

@@ -16,7 +16,7 @@ type alias Cell =
 {-| Cellに文字を対応させて、道に文字列が並んだ小説迷路を表す。
 -}
 type alias Maze =
-    Dict Cell String
+    Dict Cell Char
 
 
 {-| 空の迷路。
@@ -28,14 +28,14 @@ empty =
 
 {-| 迷路のセルに文字を挿入する。
 -}
-insert : Cell -> String -> Maze -> Maze
+insert : Cell -> Char -> Maze -> Maze
 insert cell c maze =
     Dict.insert cell c maze
 
 
 {-| Cellに格納された文字を取得する。
 -}
-get : Cell -> Maze -> Maybe String
+get : Cell -> Maze -> Maybe Char
 get cell maze =
     Dict.get cell maze
 
@@ -132,6 +132,14 @@ type MazeResult {- 完成した迷路 -}
     | BackTrack Int
 
 
+{-| 文字列の最初の文字を返す。
+文字列の長さが0の時は全角空白を返すが、必ず文字列の長さが1以上であることをチェックして使うこと。
+-}
+headChar : String -> Char
+headChar =
+    String.toList >> List.head >> Maybe.withDefault '\u{3000}'
+
+
 {-| 文字列から迷路の一本道を作る。
 -}
 novelPath : Chooser -> String -> Maze
@@ -142,7 +150,7 @@ novelPath chooser novel =
     else
         let
             c =
-                String.left 1 novel
+                headChar novel
 
             rest =
                 String.dropLeft 1 novel
@@ -163,7 +171,7 @@ novelPath chooser novel =
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-novelPathAux : Chooser -> String -> String -> Maze -> Set Cell -> Cell -> MazeResult
+novelPathAux : Chooser -> Char -> String -> Maze -> Set Cell -> Cell -> MazeResult
 novelPathAux chooser currentChar currentRest maze exceptions currentCell =
     if String.length currentRest == 0 then
         MazeResult (insert currentCell currentChar maze)
@@ -184,7 +192,7 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
             Just ( nextCell, nextChooser ) ->
                 let
                     c =
-                        String.left 1 currentRest
+                        headChar currentRest
 
                     rest =
                         String.dropLeft 1 currentRest

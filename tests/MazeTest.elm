@@ -35,7 +35,7 @@ sampleMaze cells =
             Dict.empty
 
         head :: rest ->
-            Dict.insert head "a" <| sampleMaze rest
+            Dict.insert head 'a' <| sampleMaze rest
 
 
 suite : Test
@@ -46,17 +46,17 @@ suite =
                 \_ ->
                     Expect.equal
                         (Maze.novelPath testChooser "h")
-                        (Dict.fromList [ ( ( 0, 0 ), "h" ) ])
+                        (Dict.fromList [ ( ( 0, 0 ), 'h' ) ])
             , test "make two cell path" <|
                 \_ ->
                     Expect.equal
                         (Maze.novelPath testChooser "he")
-                        (Dict.fromList [ ( ( 0, 0 ), "h" ), ( ( -1, 0 ), "e" ) ])
+                        (Dict.fromList [ ( ( 0, 0 ), 'h' ), ( ( -1, 0 ), 'e' ) ])
             , test "make three cell path" <|
                 \_ ->
                     Expect.equal
                         (Maze.novelPath testChooser "hel")
-                        (Dict.fromList [ ( ( 0, 0 ), "h" ), ( ( -1, 0 ), "e" ), ( ( -2, 0 ), "l" ) ])
+                        (Dict.fromList [ ( ( 0, 0 ), 'h' ), ( ( -1, 0 ), 'e' ), ( ( -2, 0 ), 'l' ) ])
             ]
         , describe "Maze.choiceOfNextCell"
             [ test "choice of next cell" <|
