@@ -6430,7 +6430,7 @@ var $elm$url$Url$Parser$parse = F2(
 					url.fragment,
 					$elm$core$Basics$identity)));
 	});
-var $author$project$Main$Top = function (a) {
+var $author$project$Route$Top = function (a) {
 	return {$: 'Top', a: a};
 };
 var $elm$url$Url$Parser$Internal$Parser = function (a) {
@@ -6587,7 +6587,7 @@ var $elm$url$Url$Parser$top = $elm$url$Url$Parser$Parser(
 		return _List_fromArray(
 			[state]);
 	});
-var $author$project$Main$pathParser = function (url) {
+var $author$project$Route$pathParser = function (url) {
 	return A3(
 		$elm$core$List$foldl,
 		$elm$url$Url$Parser$slash,
@@ -6631,28 +6631,28 @@ var $elm$url$Url$Parser$questionMark = F2(
 			parser,
 			$elm$url$Url$Parser$query(queryParser));
 	});
-var $author$project$Main$routeParser = function (url) {
+var $author$project$Route$routeParser = function (url) {
 	return $elm$url$Url$Parser$oneOf(
 		_List_fromArray(
 			[
 				A2(
 				$elm$url$Url$Parser$map,
-				$author$project$Main$Top,
+				$author$project$Route$Top,
 				A2(
 					$elm$url$Url$Parser$questionMark,
-					$author$project$Main$pathParser(url),
+					$author$project$Route$pathParser(url),
 					$elm$url$Url$Parser$Query$int('seed')))
 			]));
 };
-var $author$project$Main$urlToRoute = function (url) {
+var $author$project$Route$urlToRoute = function (url) {
 	return A2(
 		$elm$url$Url$Parser$parse,
-		$author$project$Main$routeParser(url),
+		$author$project$Route$routeParser(url),
 		url);
 };
 var $author$project$Main$init = F3(
 	function (_v0, url, key) {
-		var _v1 = $author$project$Main$urlToRoute(url);
+		var _v1 = $author$project$Route$urlToRoute(url);
 		if (_v1.$ === 'Nothing') {
 			return _Utils_Tuple2(
 				A4($author$project$Main$Model, key, url, $author$project$Main$Loading, $author$project$Main$dummySeed),
@@ -7496,7 +7496,7 @@ var $elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var $author$project$Util$seedUrl = F2(
-	function (url, seed) {
+	function (seed, url) {
 		return $elm$core$String$concat(
 			_List_fromArray(
 				[
@@ -7506,7 +7506,7 @@ var $author$project$Util$seedUrl = F2(
 				]));
 	});
 var $author$project$Main$seedLink = function (model) {
-	var link = A2($author$project$Util$seedUrl, model.url, model.seed);
+	var link = A2($author$project$Util$seedUrl, model.seed, model.url);
 	return A2(
 		$elm$html$Html$a,
 		_List_fromArray(
