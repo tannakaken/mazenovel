@@ -4533,43 +4533,6 @@ function _Http_track(router, xhr, tracker)
 }
 
 
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
-
 function _Time_now(millisToPosix)
 {
 	return _Scheduler_binding(function(callback)
@@ -4630,7 +4593,44 @@ function _Url_percentDecode(string)
 	{
 		return $elm$core$Maybe$Nothing;
 	}
-}var $author$project$Main$LinkClicked = function (a) {
+}
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
+var $author$project$Main$LinkClicked = function (a) {
 	return {$: 'LinkClicked', a: a};
 };
 var $author$project$Main$UrlChanged = function (a) {
@@ -5436,6 +5436,7 @@ var $author$project$Main$Model = F4(
 	function (key, url, state, seed) {
 		return {key: key, seed: seed, state: state, url: url};
 	});
+var $author$project$Main$dummySeed = 0;
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
 	function (a, b) {
@@ -6223,25 +6224,6 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 'Seed', a: a, b: b};
-	});
-var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var $elm$random$Random$next = function (_v0) {
-	var state0 = _v0.a;
-	var incr = _v0.b;
-	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var $elm$random$Random$initialSeed = function (x) {
-	var _v0 = $elm$random$Random$next(
-		A2($elm$random$Random$Seed, 0, 1013904223));
-	var state1 = _v0.a;
-	var incr = _v0.b;
-	var state2 = (state1 + x) >>> 0;
-	return $elm$random$Random$next(
-		A2($elm$random$Random$Seed, state2, incr));
-};
 var $author$project$Novel$NovelNode = F2(
 	function (node, next) {
 		return {next: next, node: node};
@@ -6585,33 +6567,18 @@ var $author$project$Main$init = F3(
 		var _v1 = $author$project$Main$urlToRoute(url);
 		if (_v1.$ === 'Nothing') {
 			return _Utils_Tuple2(
-				A4(
-					$author$project$Main$Model,
-					key,
-					url,
-					$author$project$Main$Loading,
-					$elm$random$Random$initialSeed(0)),
+				A4($author$project$Main$Model, key, url, $author$project$Main$Loading, $author$project$Main$dummySeed),
 				A2($elm$core$Task$perform, $author$project$Main$GotTime, $elm$time$Time$now));
 		} else {
 			var maybeSeed = _v1.a.a;
 			if (maybeSeed.$ === 'Nothing') {
 				return _Utils_Tuple2(
-					A4(
-						$author$project$Main$Model,
-						key,
-						url,
-						$author$project$Main$Loading,
-						$elm$random$Random$initialSeed(0)),
+					A4($author$project$Main$Model, key, url, $author$project$Main$Loading, $author$project$Main$dummySeed),
 					A2($elm$core$Task$perform, $author$project$Main$GotTime, $elm$time$Time$now));
 			} else {
 				var seed = maybeSeed.a;
 				return _Utils_Tuple2(
-					A4(
-						$author$project$Main$Model,
-						key,
-						url,
-						$author$project$Main$Loading,
-						$elm$random$Random$initialSeed(seed)),
+					A4($author$project$Main$Model, key, url, $author$project$Main$Loading, seed),
 					$elm$http$Http$get(
 						{
 							expect: A2($elm$http$Http$expectJson, $author$project$Main$GotJson, $author$project$Main$jsonDecoder),
@@ -6731,8 +6698,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							seed: $elm$random$Random$initialSeed(
-								$elm$time$Time$posixToMillis(posix))
+							seed: $elm$time$Time$posixToMillis(posix)
 						}),
 					$elm$http$Http$get(
 						{
@@ -6902,6 +6868,25 @@ var $author$project$Main$mazeRows = F2(
 	function (area, maze) {
 		return A4($author$project$Main$mazeRowsAux, area, maze, area.top, _List_Nil);
 	});
+var $elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 'Seed', a: a, b: b};
+	});
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$random$Random$next = function (_v0) {
+	var state0 = _v0.a;
+	var incr = _v0.b;
+	return A2($elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var $elm$random$Random$initialSeed = function (x) {
+	var _v0 = $elm$random$Random$next(
+		A2($elm$random$Random$Seed, 0, 1013904223));
+	var state1 = _v0.a;
+	var incr = _v0.b;
+	var state2 = (state1 + x) >>> 0;
+	return $elm$random$Random$next(
+		A2($elm$random$Random$Seed, state2, incr));
+};
 var $author$project$Maze$empty = $elm$core$Dict$empty;
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
@@ -7407,16 +7392,35 @@ var $author$project$Novel$randomNovel = F2(
 	});
 var $author$project$Main$randomMaze = F2(
 	function (seed, novelTree) {
-		var _v0 = A2($author$project$Novel$randomNovel, seed, novelTree);
+		var random = $elm$random$Random$initialSeed(seed);
+		var chooser = $author$project$Maze$randomChooser(random);
+		var _v0 = A2($author$project$Novel$randomNovel, random, novelTree);
 		var novel = _v0.a;
 		var novelPath = _v0.b;
-		var maze = A2(
-			$author$project$Maze$novelPath,
-			$author$project$Maze$randomChooser(seed),
-			novel);
+		var maze = A2($author$project$Maze$novelPath, chooser, novel);
 		var pathString = $author$project$Novel$pathToString(novelPath);
 		return _Utils_Tuple2(maze, pathString);
 	});
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $author$project$Main$seedLink = function (seed) {
+	var link = '/?seed=' + $elm$core$String$fromInt(seed);
+	return A2(
+		$elm$html$Html$a,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$href(link)
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(link)
+			]));
+};
 var $author$project$Main$randomMazeHtml = F2(
 	function (seed, novelTree) {
 		var _v0 = A2($author$project$Main$randomMaze, seed, novelTree);
@@ -7447,6 +7451,17 @@ var $author$project$Main$randomMazeHtml = F2(
 					_List_fromArray(
 						[
 							$elm$html$Html$text(pathString)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('seed')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('ブックマーク用URL:'),
+							$author$project$Main$seedLink(seed)
 						]))
 				]));
 	});
