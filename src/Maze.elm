@@ -7,24 +7,34 @@ import Set exposing (Set)
 import Util exposing (getNth)
 
 
+{-| 迷路のセルの座標を表す。
+-}
 type alias Cell =
     ( Int, Int )
 
 
+{-| Cellに文字を対応させて、道に文字列が並んだ小説迷路を表す。
+-}
 type alias Maze =
     Dict Cell String
 
 
+{-| 空の迷路。
+-}
 empty : Maze
 empty =
     Dict.empty
 
 
+{-| 迷路のセルに文字を挿入する。
+-}
 insert : Cell -> String -> Maze -> Maze
 insert cell c maze =
     Dict.insert cell c maze
 
 
+{-| Cellに格納された文字を取得する。
+-}
 get : Cell -> Maze -> Maybe String
 get cell maze =
     Dict.get cell maze
@@ -38,6 +48,8 @@ type Chooser
     = Chooser (Set Cell -> Maybe ( Cell, Chooser ))
 
 
+{-| Chooserを使って、Cellを選択する。
+-}
 choose : Chooser -> Set Cell -> Maybe ( Cell, Chooser )
 choose (Chooser chooser) cells =
     chooser cells
@@ -56,6 +68,8 @@ next chooser =
             chooser
 
 
+{-| 擬似乱数を使用したChooser。
+-}
 randomChooser : Random.Seed -> Chooser
 randomChooser seed =
     let
@@ -92,6 +106,8 @@ randomChooser seed =
     Chooser chooser
 
 
+{-| 迷路の範囲を表す型。
+-}
 type alias Area =
     { top : Int
     , right : Int
@@ -100,6 +116,8 @@ type alias Area =
     }
 
 
+{-| その迷路から、その迷路が含まれる範囲を返す。
+-}
 getArea : Maze -> Area
 getArea maze =
     Dict.keys maze
@@ -194,13 +212,15 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
                         result
 
 
-{-| 既に作られた迷路と現在のセルから次のセルをChooserを使って選べたなら選ぶ。
+{-| 既に作られた迷路と候補の除外リストと現在のセルから次のセルをChooserを使って選べたなら選ぶ。
 -}
 chooseNextCell : Chooser -> Maze -> Set Cell -> Cell -> Maybe ( Cell, Chooser )
 chooseNextCell chooser maze exceptions currentCell =
     choiceOfNextCell maze exceptions currentCell |> choose chooser
 
 
+{-| 既に作られた迷路と候補の除外リストと現在のCellから、次のセルの候補を返す。
+-}
 choiceOfNextCell : Maze -> Set Cell -> Cell -> Set Cell
 choiceOfNextCell maze exceptions currentCell =
     vonNeumannNeighborhood currentCell
@@ -210,6 +230,8 @@ choiceOfNextCell maze exceptions currentCell =
            )
 
 
+{-| セルのフォン・ノイマン近傍
+-}
 vonNeumannNeighborhood : Cell -> Set Cell
 vonNeumannNeighborhood cell =
     let
@@ -232,16 +254,22 @@ canDig maze previousCell cell =
     inArea cell && (not <| onExistingPath maze cell) && doesBecomeSinglePath maze previousCell cell
 
 
+{-| エリア内にあるか。
+-}
 inArea : Cell -> Bool
 inArea ( x, y ) =
     y >= 0
 
 
+{-| 既に作られた道になっているか。
+-}
 onExistingPath : Maze -> Cell -> Bool
 onExistingPath maze cell =
     Dict.member cell maze
 
 
+{-| 一本道になるか。
+-}
 doesBecomeSinglePath : Maze -> Cell -> Cell -> Bool
 doesBecomeSinglePath maze previousCell cell =
     let

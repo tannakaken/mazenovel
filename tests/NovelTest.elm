@@ -26,7 +26,7 @@ suite =
                 \_ ->
                     Expect.equal
                         (Novel.randomNovel (Random.initialSeed 0) [] testNovelTree)
-                        ( "hello", [] )
+                        (Just ( "hello", [] ))
             ]
         , describe "Novel.pathToString"
             [ test "make String from NovelPath" <|

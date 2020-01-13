@@ -66,11 +66,16 @@ defaultPath =
     []
 
 
+pathNotFound : String
+pathNotFound =
+    "お探しの道は見つかりませんでした。"
+
+
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
     case urlToRoute url of
         Nothing ->
-            ( Model key url (Failure "お探しのページは見つかりません。") dummySeed defaultPath
+            ( Model key url (Failure "お探しのページは見つかりませんでした。") dummySeed defaultPath
             , Cmd.none
             )
 
@@ -82,7 +87,7 @@ init _ url key =
                 Just pathString ->
                     case Novel.pathFromString pathString of
                         Nothing ->
-                            ( Model key url (Failure "お探しの道は見つかりません。") dummySeed defaultPath
+                            ( Model key url (Failure pathNotFound) dummySeed defaultPath
                             , Cmd.none
                             )
 
@@ -205,10 +210,10 @@ view model =
     , body =
         [ case model.state of
             Failure errorMessage ->
-                div [class "error"] [text errorMessage]
+                div [ class "error" ] [ text errorMessage ]
 
             Loading ->
-                div [class "loading"] [text "loading..."]
+                div [ class "loading" ] [ text "loading..." ]
 
             Success novelTree ->
                 randomMazeHtml model novelTree
@@ -216,15 +221,18 @@ view model =
     }
 
 
-randomMaze : Model -> NovelTree -> ( Maze, String )
+randomMaze : Model -> NovelTree -> Maybe ( Maze, String )
 randomMaze model novelTree =
     let
         random =
             Random.initialSeed model.seed
+    in
+    randomNovel random model.path novelTree |> Maybe.map (novelToMaze random)
 
-        ( novel, novelPath ) =
-            randomNovel random model.path novelTree
 
+novelToMaze : Random.Seed -> ( String, NovelPath ) -> ( Maze, String )
+novelToMaze random ( novel, novelPath ) =
+    let
         chooser =
             Maze.randomChooser random
 
@@ -239,18 +247,20 @@ randomMaze model novelTree =
 
 randomMazeHtml : Model -> NovelTree -> Html msg
 randomMazeHtml model novelTree =
-    let
-        ( maze, pathString ) =
-            randomMaze model novelTree
+    case randomMaze model novelTree of
+        Nothing ->
+            div [ class "error" ] [ text pathNotFound ]
 
-        area =
-            Maze.getArea maze
-    in
-    article [ class "main" ]
-        [ div [ class "maze" ] <| mazeRows area maze
-        , div [ class "path" ] [ text pathString ]
-        , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink model ]
-        ]
+        Just ( maze, pathString ) ->
+            let
+                area =
+                    Maze.getArea maze
+            in
+            article [ class "main" ]
+                [ div [ class "maze" ] <| mazeRows area maze
+                , div [ class "path" ] [ text pathString ]
+                , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink model ]
+                ]
 
 
 seedLink : Model -> Html msg

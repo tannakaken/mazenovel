@@ -17,6 +17,8 @@ getNth nth list =
 -- URL
 
 
+{-| アプリのベースURL。
+-}
 baseUrl : Url -> String
 baseUrl url =
     let
