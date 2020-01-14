@@ -4,12 +4,16 @@ module Maze exposing
     , empty
     , insert
     , get
+    , Chooser(..)
     , choose
     , next
     , randomChooser
     , Area
     , getArea
     , novelPath
+    , choiceOfNextCell
+    , vonNeumannNeighborhood
+    , canDig
     )
 
 {-| 小説を二次元のセル上に配置した小説迷路に関するモジュール。
@@ -34,6 +38,7 @@ module Maze exposing
 
 # Choose
 
+@docs Chooser
 @docs choose
 @docs next
 @docs randomChooser
@@ -48,6 +53,13 @@ module Maze exposing
 # Path
 
 @docs novelPath
+@docs choiceOfNextCell
+
+
+# Neighborhood
+
+@docs vonNeumannNeighborhood
+@docs canDig
 
 -}
 
