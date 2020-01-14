@@ -5434,8 +5434,6 @@ var $author$project$Main$Model = F5(
 	});
 var $author$project$Main$defaultPath = _List_Nil;
 var $author$project$Main$dummySeed = 0;
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Maybe$map2 = F3(
 	function (func, ma, mb) {
 		if (ma.$ === 'Nothing') {
@@ -5451,17 +5449,19 @@ var $elm$core$Maybe$map2 = F3(
 			}
 		}
 	});
-var $author$project$Novel$combineMaybe = A2(
+var $author$project$Path$combineMaybe = A2(
 	$elm$core$List$foldr,
 	$elm$core$Maybe$map2($elm$core$List$cons),
 	$elm$core$Maybe$Just(_List_Nil));
-var $author$project$Novel$pathFromString = function (str) {
-	return $author$project$Novel$combineMaybe(
+var $author$project$Path$fromString = function (str) {
+	return $author$project$Path$combineMaybe(
 		A2(
 			$elm$core$List$map,
 			$elm$core$String$toInt,
 			A2($elm$core$String$split, ',', str)));
 };
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$pathNotFound = 'お探しの道は見つかりませんでした。';
 var $author$project$Main$GotJson = function (a) {
 	return {$: 'GotJson', a: a};
@@ -6257,7 +6257,7 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Novel$NovelNode = F2(
+var $author$project$Novel$Node = F2(
 	function (node, next) {
 		return {next: next, node: node};
 	});
@@ -6278,7 +6278,7 @@ var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Main$jsonDecoder = $elm$json$Json$Decode$array(
 	A3(
 		$elm$json$Json$Decode$map2,
-		$author$project$Novel$NovelNode,
+		$author$project$Novel$Node,
 		A2(
 			$elm$json$Json$Decode$field,
 			'c',
@@ -6753,7 +6753,7 @@ var $author$project$Main$init = F3(
 				return A4($author$project$Main$seedInitialize, url, key, $author$project$Main$defaultPath, query.seed);
 			} else {
 				var pathString = _v2.a;
-				var _v3 = $author$project$Novel$pathFromString(pathString);
+				var _v3 = $author$project$Path$fromString(pathString);
 				if (_v3.$ === 'Nothing') {
 					return _Utils_Tuple2(
 						A5(
@@ -7108,37 +7108,6 @@ var $author$project$Maze$headChar = A2(
 		$elm$core$List$head,
 		$elm$core$Maybe$withDefault(
 			_Utils_chr('\u3000'))));
-var $author$project$Maze$choose = F2(
-	function (_v0, cells) {
-		var chooser = _v0.a;
-		return chooser(cells);
-	});
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Set$fromList = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
-};
-var $author$project$Maze$next = function (chooser) {
-	var _v0 = A2(
-		$author$project$Maze$choose,
-		chooser,
-		$elm$core$Set$fromList(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(0, 0)
-				])));
-	if (_v0.$ === 'Just') {
-		var _v1 = _v0.a;
-		var nextChooser = _v1.b;
-		return nextChooser;
-	} else {
-		return chooser;
-	}
-};
 var $author$project$Maze$BackTrack = function (a) {
 	return {$: 'BackTrack', a: a};
 };
@@ -7223,6 +7192,15 @@ var $elm$core$Set$remove = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$remove, key, dict));
 	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
 var $author$project$Maze$vonNeumannNeighborhood = function (cell) {
 	var _v0 = cell;
 	var x = _v0.a;
@@ -7286,6 +7264,11 @@ var $author$project$Maze$choiceOfNextCell = F3(
 		}(
 			$author$project$Maze$vonNeumannNeighborhood(currentCell));
 	});
+var $author$project$Maze$choose = F2(
+	function (_v0, cells) {
+		var chooser = _v0.a;
+		return chooser(cells);
+	});
 var $author$project$Maze$chooseNextCell = F4(
 	function (chooser, maze, exceptions, currentCell) {
 		return A2(
@@ -7297,9 +7280,9 @@ var $author$project$Maze$insert = F3(
 	function (cell, c, maze) {
 		return A3($elm$core$Dict$insert, cell, c, maze);
 	});
-var $author$project$Maze$novelPathAux = F6(
+var $author$project$Maze$makeExitAux = F6(
 	function (chooser, currentChar, currentRest, maze, exceptions, currentCell) {
-		novelPathAux:
+		makeExitAux:
 		while (true) {
 			if (!$elm$core$String$length(currentRest)) {
 				return $author$project$Maze$MazeResult(
@@ -7315,7 +7298,7 @@ var $author$project$Maze$novelPathAux = F6(
 					var rest = A2($elm$core$String$dropLeft, 1, currentRest);
 					var nextMaze = A3($author$project$Maze$insert, currentCell, currentChar, maze);
 					var c = $author$project$Maze$headChar(currentRest);
-					var result = A6($author$project$Maze$novelPathAux, nextChooser, c, rest, nextMaze, $elm$core$Set$empty, nextCell);
+					var result = A6($author$project$Maze$makeExitAux, nextChooser, c, rest, nextMaze, $elm$core$Set$empty, nextCell);
 					if (result.$ === 'BackTrack') {
 						var n = result.a;
 						if (!n) {
@@ -7331,7 +7314,7 @@ var $author$project$Maze$novelPathAux = F6(
 							maze = $temp$maze;
 							exceptions = $temp$exceptions;
 							currentCell = $temp$currentCell;
-							continue novelPathAux;
+							continue makeExitAux;
 						} else {
 							return $author$project$Maze$BackTrack(n - 1);
 						}
@@ -7342,9 +7325,26 @@ var $author$project$Maze$novelPathAux = F6(
 			}
 		}
 	});
-var $author$project$Maze$novelPath = F2(
+var $author$project$Maze$next = function (chooser) {
+	var _v0 = A2(
+		$author$project$Maze$choose,
+		chooser,
+		$elm$core$Set$fromList(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(0, 0)
+				])));
+	if (_v0.$ === 'Just') {
+		var _v1 = _v0.a;
+		var nextChooser = _v1.b;
+		return nextChooser;
+	} else {
+		return chooser;
+	}
+};
+var $author$project$Maze$makeExit = F2(
 	function (chooser, novel) {
-		novelPath:
+		makeExit:
 		while (true) {
 			if ($elm$core$String$isEmpty(novel)) {
 				return $author$project$Maze$empty;
@@ -7352,7 +7352,7 @@ var $author$project$Maze$novelPath = F2(
 				var rest = A2($elm$core$String$dropLeft, 1, novel);
 				var c = $author$project$Maze$headChar(novel);
 				var _v0 = A6(
-					$author$project$Maze$novelPathAux,
+					$author$project$Maze$makeExitAux,
 					chooser,
 					c,
 					rest,
@@ -7368,17 +7368,11 @@ var $author$project$Maze$novelPath = F2(
 						$temp$novel = novel;
 					chooser = $temp$chooser;
 					novel = $temp$novel;
-					continue novelPath;
+					continue makeExit;
 				}
 			}
 		}
 	});
-var $author$project$Novel$pathToString = function (path) {
-	return A2(
-		$elm$core$String$join,
-		',',
-		A2($elm$core$List$map, $elm$core$String$fromInt, path));
-};
 var $author$project$Maze$Chooser = function (a) {
 	return {$: 'Chooser', a: a};
 };
@@ -7508,14 +7502,20 @@ var $author$project$Maze$randomChooser = function (seed) {
 	return $author$project$Maze$Chooser(chooser);
 };
 var $elm$core$String$reverse = _String_reverse;
+var $author$project$Path$toString = function (path) {
+	return A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $elm$core$String$fromInt, path));
+};
 var $author$project$Main$novelToMaze = F2(
 	function (random, _v0) {
 		var novel = _v0.a;
 		var novelPath = _v0.b;
-		var pathString = $author$project$Novel$pathToString(novelPath);
+		var pathString = $author$project$Path$toString(novelPath);
 		var chooser = $author$project$Maze$randomChooser(random);
 		var maze = A2(
-			$author$project$Maze$novelPath,
+			$author$project$Maze$makeExit,
 			chooser,
 			$elm$core$String$reverse(novel));
 		return _Utils_Tuple2(maze, pathString);
@@ -7573,7 +7573,7 @@ var $elm$core$Array$length = function (_v0) {
 	return len;
 };
 var $author$project$Novel$appendNode = F4(
-	function (seed, novelPath, novelTree, node) {
+	function (seed, path, tree, node) {
 		var length = $elm$core$Array$length(node.next);
 		var h = A2($elm$core$Maybe$withDefault, '', node.node);
 		if (!length) {
@@ -7588,15 +7588,15 @@ var $author$project$Novel$appendNode = F4(
 				return A2(
 					$elm$core$Maybe$map,
 					function (_v0) {
-						var restNovel = _v0.a;
-						var path = _v0.b;
+						var resultNovel = _v0.a;
+						var resultPath = _v0.b;
 						return _Utils_Tuple2(
-							_Utils_ap(h, restNovel),
-							path);
+							_Utils_ap(h, resultNovel),
+							resultPath);
 					},
-					A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, nextIndex));
+					A4($author$project$Novel$selectAux, seed, path, tree, nextIndex));
 			} else {
-				if (!novelPath.b) {
+				if (!path.b) {
 					var indexGenerator = A2($elm$random$Random$int, 0, length - 1);
 					var _v2 = A2($elm$random$Random$step, indexGenerator, seed);
 					var choice = _v2.a;
@@ -7608,16 +7608,16 @@ var $author$project$Novel$appendNode = F4(
 					return A2(
 						$elm$core$Maybe$map,
 						function (_v3) {
-							var restNovel = _v3.a;
-							var restPath = _v3.b;
+							var resultNovel = _v3.a;
+							var resultPath = _v3.b;
 							return _Utils_Tuple2(
-								_Utils_ap(h, restNovel),
-								A2($elm$core$List$cons, choice, restPath));
+								_Utils_ap(h, resultNovel),
+								A2($elm$core$List$cons, choice, resultPath));
 						},
-						A4($author$project$Novel$randomNovelAux, nextSeed, novelPath, novelTree, nextIndex));
+						A4($author$project$Novel$selectAux, nextSeed, path, tree, nextIndex));
 				} else {
-					var choice = novelPath.a;
-					var rest = novelPath.b;
+					var choice = path.a;
+					var restPath = path.b;
 					var nextIndex = A2(
 						$elm$core$Maybe$withDefault,
 						-1,
@@ -7625,27 +7625,27 @@ var $author$project$Novel$appendNode = F4(
 					return A2(
 						$elm$core$Maybe$map,
 						function (_v4) {
-							var restNovel = _v4.a;
-							var restPath = _v4.b;
+							var resultNovel = _v4.a;
+							var resultPath = _v4.b;
 							return _Utils_Tuple2(
-								_Utils_ap(h, restNovel),
-								A2($elm$core$List$cons, choice, restPath));
+								_Utils_ap(h, resultNovel),
+								A2($elm$core$List$cons, choice, resultPath));
 						},
-						A4($author$project$Novel$randomNovelAux, seed, rest, novelTree, nextIndex));
+						A4($author$project$Novel$selectAux, seed, restPath, tree, nextIndex));
 				}
 			}
 		}
 	});
-var $author$project$Novel$randomNovelAux = F4(
-	function (seed, novelPath, novelTree, currentIndex) {
+var $author$project$Novel$selectAux = F4(
+	function (seed, path, tree, currentIndex) {
 		return A2(
 			$elm$core$Maybe$andThen,
-			A3($author$project$Novel$appendNode, seed, novelPath, novelTree),
-			A2($elm$core$Array$get, currentIndex, novelTree));
+			A3($author$project$Novel$appendNode, seed, path, tree),
+			A2($elm$core$Array$get, currentIndex, tree));
 	});
-var $author$project$Novel$randomNovel = F3(
-	function (seed, novelPath, novelTree) {
-		return A4($author$project$Novel$randomNovelAux, seed, novelPath, novelTree, 0);
+var $author$project$Novel$select = F3(
+	function (seed, path, tree) {
+		return A4($author$project$Novel$selectAux, seed, path, tree, 0);
 	});
 var $author$project$Main$randomMaze = F2(
 	function (model, novelTree) {
@@ -7653,7 +7653,7 @@ var $author$project$Main$randomMaze = F2(
 		return A2(
 			$elm$core$Maybe$map,
 			$author$project$Main$novelToMaze(random),
-			A3($author$project$Novel$randomNovel, random, model.path, novelTree));
+			A3($author$project$Novel$select, random, model.path, novelTree));
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$Attributes$href = function (url) {
