@@ -1,7 +1,8 @@
-module Novel exposing (NovelNode, NovelPath, NovelTree, pathFromString, pathToString, randomNovel)
+module Novel exposing (NovelNode, NovelPath, NovelTree, pathFromString, pathToForks, pathToString, randomNovel)
 
 import Array exposing (Array)
 import Random
+import Set exposing (Set)
 
 
 {-| 途中から分岐する小説を表す、木構造のデータ構造
@@ -47,6 +48,16 @@ pathFromString str =
     String.split "," str
         |> List.map String.toInt
         |> combineMaybe
+
+
+{-| NovelPathを分かれ道の集合へと変換する。
+-}
+pathToForks : NovelPath -> Set NovelPath
+pathToForks novelPath =
+    List.range 0 (List.length novelPath - 1)
+        |> List.map List.take
+        |> List.map (\f -> f novelPath)
+        |> Set.fromList
 
 
 {-| NovelPathに従ってNovelTreeを辿り、NovelPathが途切れたあとは、ランダムに選ぶ。
