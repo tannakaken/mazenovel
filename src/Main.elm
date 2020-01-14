@@ -237,7 +237,7 @@ novelToMaze random ( novel, novelPath ) =
             Maze.randomChooser random
 
         maze =
-            Maze.novelPath chooser novel
+            Maze.novelPath chooser (String.reverse novel)
 
         pathString =
             Novel.pathToString novelPath
