@@ -1,7 +1,15 @@
 module Maze exposing
-    ( get
+    ( Cell
+    , Maze
+    , empty
+    , insert
+    , get
+    , choose
+    , next
+    , randomChooser
+    , Area
+    , getArea
     , novelPath
-    , Area, Cell, Maze, choose, empty, getArea, insert, next, randomChooser
     )
 
 {-| 小説を二次元のセル上に配置した小説迷路に関するモジュール。
@@ -12,10 +20,12 @@ module Maze exposing
 @docs Cell
 @docs Maze
 
+
 # Crate
 
 @docs empty
 @docs insert
+
 
 # Get
 
@@ -33,6 +43,7 @@ module Maze exposing
 
 @docs Area
 @docs getArea
+
 
 # Path
 
@@ -60,11 +71,9 @@ type alias Cell =
 {-| Cellに文字を対応させて、道に文字列が並んだ小説迷路を表す。
 例えば小説迷路
 
-
     　出
     　口は
     　　どこ
-
 
 は、
 Maze.empty
