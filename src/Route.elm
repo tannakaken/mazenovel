@@ -1,12 +1,21 @@
-module Route exposing (..)
+module Route exposing (Query, Route(..), urlToRoute)
+
+{-| 受け取ったUrlを処理するモジュール。
+
+
+# Route
+
+@docs Query, Route, urlToRoute
+
+-}
 
 import Url exposing (Url)
 import Url.Parser as UP exposing ((</>), (<?>), Parser, s, top)
 import Url.Parser.Query as Q
 
 
-{-| seedは乱数のseedを生成するためのIntを、
-pathは迷路の途中までの道順を表す。
+{-| seedは乱数のseedを生成するための`Int`を、
+pathは迷路の途中までの道順を表す`"0,1,0"のような自然数のコンマ区切りの`String\`を表す。
 -}
 type alias Query =
     { seed : Maybe Int
@@ -39,6 +48,21 @@ routeParser url =
         [ UP.map Top (pathParser url <?> Q.map2 Query (Q.int "seed") (Q.string "path")) ]
 
 
+{-| URLを受け取って、パースする関数。
+
+    urlToRoute (Url.fromString "http://example.org")
+        == Just (Top (Query Nothing Nothing))
+
+    urlToRoute (Url.fromString "http://example.org/path/?seed=1")
+        == Just (Top (Query (Just 1) Nothing))
+
+    urlToRoute (Url.fromString "http://example.org/?path=0,1,0")
+        == Just (Top (Query Nothing (Just "0,1,0")))
+
+    urlToRoute (Url.fromString "http://example.org/?seed=1&path=0,0,1")
+        == Just (Top (Query (Just 1) (Just "0.0.1")))
+
+-}
 urlToRoute : Url -> Maybe Route
 urlToRoute url =
     UP.parse (routeParser url) url

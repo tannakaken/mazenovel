@@ -5,6 +5,8 @@
   "exposed-modules": [
     "Maze",
     "Novel",
-    "Path"
+    "Path",
+    "Route",
+    "Util"
   ]
 }
