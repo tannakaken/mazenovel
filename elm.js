@@ -7507,13 +7507,17 @@ var $author$project$Maze$randomChooser = function (seed) {
 	};
 	return $author$project$Maze$Chooser(chooser);
 };
+var $elm$core$String$reverse = _String_reverse;
 var $author$project$Main$novelToMaze = F2(
 	function (random, _v0) {
 		var novel = _v0.a;
 		var novelPath = _v0.b;
 		var pathString = $author$project$Novel$pathToString(novelPath);
 		var chooser = $author$project$Maze$randomChooser(random);
-		var maze = A2($author$project$Maze$novelPath, chooser, novel);
+		var maze = A2(
+			$author$project$Maze$novelPath,
+			chooser,
+			$elm$core$String$reverse(novel));
 		return _Utils_Tuple2(maze, pathString);
 	});
 var $elm$core$Maybe$andThen = F2(
