@@ -58,5 +58,17 @@ suite =
                         |> Maybe.andThen Route.urlToRoute
                         |> Expect.equal
                             (Query (Just 1) Nothing |> Top |> Just)
+            , test "parse url with index.html" <|
+                \_ ->
+                    Url.fromString "http://example.org/index.html"
+                        |> Maybe.andThen Route.urlToRoute
+                        |> Expect.equal
+                            (Query Nothing Nothing |> Top |> Just)
+            , test "parse url with index.html & path" <|
+                \_ ->
+                    Url.fromString "http://example.org/path/index.html"
+                        |> Maybe.andThen Route.urlToRoute
+                        |> Expect.equal
+                            (Query Nothing Nothing |> Top |> Just)
             ]
         ]

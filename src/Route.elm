@@ -29,6 +29,13 @@ type Route
     = Top Query
 
 
+{-| 邪魔なのでindex.htmlを除く。
+-}
+removeIndexHtml : Url -> Maybe Url
+removeIndexHtml =
+    Url.toString >> String.replace "index.html" "" >> Url.fromString
+
+
 {-| <http://localhost:8000のようなURLでもhttps://tannakaken.xyz/mazenovelのようなパス部分のあるURLでも、>
 どちらでも設定なしで使えるようにするための関数。
 -}
@@ -50,19 +57,31 @@ routeParser url =
 
 {-| URLを受け取って、パースする関数。
 
-    urlToRoute (Url.fromString "http://example.org")
+    Maybe.andThen urlToRoute
+        (Url.fromString "http://example.org")
         == Just (Top (Query Nothing Nothing))
 
-    urlToRoute (Url.fromString "http://example.org/path/?seed=1")
+    Maybe.andThen urlToRoute
+        Url.fromString
+        "http://example.org/path/?seed=1"
         == Just (Top (Query (Just 1) Nothing))
 
-    urlToRoute (Url.fromString "http://example.org/?path=0,1,0")
+    Maybe.andThen urlToRoute
+        Url.fromString
+        "http://example.org/?path=0,1,0"
         == Just (Top (Query Nothing (Just "0,1,0")))
 
-    urlToRoute (Url.fromString "http://example.org/?seed=1&path=0,0,1")
+    Maybe.andThen urlToRoute
+        (Url.fromString "http://example.org/?seed=1&path=0,0,1")
         == Just (Top (Query (Just 1) (Just "0.0.1")))
 
 -}
 urlToRoute : Url -> Maybe Route
-urlToRoute url =
+urlToRoute =
+    removeIndexHtml >> Maybe.andThen urlToRouteAux
+
+
+{-| -}
+urlToRouteAux : Url -> Maybe Route
+urlToRouteAux url =
     UP.parse (routeParser url) url
