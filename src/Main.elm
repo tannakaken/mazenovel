@@ -8,7 +8,8 @@ import Html.Attributes exposing (class, href)
 import Http
 import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Cell, Maze)
-import Novel exposing (NovelNode, NovelPath, NovelTree, randomNovel)
+import Novel
+import Path exposing (Path)
 import Random
 import Route exposing (Query, Route(..), urlToRoute)
 import Task
@@ -42,14 +43,14 @@ type alias Model =
     , url : Url
     , state : State
     , seed : Int
-    , path : NovelPath
+    , path : Path
     }
 
 
 type State
     = Failure String
     | Loading
-    | Success NovelTree
+    | Success Novel.Tree
 
 
 
@@ -61,7 +62,7 @@ dummySeed =
     0
 
 
-defaultPath : NovelPath
+defaultPath : Path
 defaultPath =
     []
 
@@ -85,7 +86,7 @@ init _ url key =
                     seedInitialize url key defaultPath query.seed
 
                 Just pathString ->
-                    case Novel.pathFromString pathString of
+                    case Path.fromString pathString of
                         Nothing ->
                             ( Model key url (Failure pathNotFound) dummySeed defaultPath
                             , Cmd.none
@@ -95,7 +96,7 @@ init _ url key =
                             seedInitialize url key path query.seed
 
 
-seedInitialize : Url -> Nav.Key -> NovelPath -> Maybe Int -> ( Model, Cmd Msg )
+seedInitialize : Url -> Nav.Key -> Path -> Maybe Int -> ( Model, Cmd Msg )
 seedInitialize url key path maybeSeed =
     case maybeSeed of
         Nothing ->
@@ -116,10 +117,10 @@ seedInitialize url key path maybeSeed =
 -- UPDATE
 
 
-jsonDecoder : Decoder NovelTree
+jsonDecoder : Decoder Novel.Tree
 jsonDecoder =
     JD.array
-        (JD.map2 NovelNode
+        (JD.map2 Novel.Node
             (JD.field "c" (JD.nullable JD.string))
             (JD.field "n" (JD.array JD.int))
         )
@@ -129,7 +130,7 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url
     | GotTime Time.Posix
-    | GotJson (Result Http.Error NovelTree)
+    | GotJson (Result Http.Error Novel.Tree)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -221,16 +222,16 @@ view model =
     }
 
 
-randomMaze : Model -> NovelTree -> Maybe ( Maze, String )
+randomMaze : Model -> Novel.Tree -> Maybe ( Maze, String )
 randomMaze model novelTree =
     let
         random =
             Random.initialSeed model.seed
     in
-    randomNovel random model.path novelTree |> Maybe.map (novelToMaze random)
+    Novel.select random model.path novelTree |> Maybe.map (novelToMaze random)
 
 
-novelToMaze : Random.Seed -> ( String, NovelPath ) -> ( Maze, String )
+novelToMaze : Random.Seed -> ( String, Path ) -> ( Maze, String )
 novelToMaze random ( novel, novelPath ) =
     let
         chooser =
@@ -240,12 +241,12 @@ novelToMaze random ( novel, novelPath ) =
             Maze.novelPath chooser (String.reverse novel)
 
         pathString =
-            Novel.pathToString novelPath
+            Path.toString novelPath
     in
     ( maze, pathString )
 
 
-randomMazeHtml : Model -> NovelTree -> Html msg
+randomMazeHtml : Model -> Novel.Tree -> Html msg
 randomMazeHtml model novelTree =
     case randomMaze model novelTree of
         Nothing ->

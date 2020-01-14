@@ -3,6 +3,8 @@
   "summary": "小説の迷路を作る",
   "version": "1.0.0",
   "exposed-modules": [
-    "Maze"
+    "Maze",
+    "Novel",
+    "Path"
   ]
 }
