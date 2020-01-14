@@ -4,7 +4,7 @@
   "description": "web app that making maze from novels",
   "scripts": {
     "test": "npx elm-test",
-    "check-format": "npx elm-format . --validate"
+    "check-format": "npx elm-format . --validate",
     "doc-preview": "npx elm-doc-preview"
   },
   "repository": {
