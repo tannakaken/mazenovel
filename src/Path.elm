@@ -38,7 +38,9 @@ type alias Path =
 
 
 {-| Pathをコンマ区切りの文字列表現にする。
-toString [0,1,2] -- "0,1,2"
+
+    toString [ 0, 1, 2 ] == "0,1,2"
+
 -}
 toString : Path -> String
 toString path =
@@ -52,8 +54,11 @@ combineMaybe =
 
 {-| コンマ区切りの文字列表現を変換可能な場合は`Maybe Path`に変換する。
 整数でない文字列が混じったりして、変換不可能な場合は`Nothing`を返す。
-fromString "0,1,2" -- Just [0,1,2]
-fromString "0,a,2" -- Nothing
+
+    fromString "0,1,2" == Just [ 0, 1, 2 ]
+
+    fromString "0,a,2" == Nothing
+
 -}
 fromString : String -> Maybe Path
 fromString str =
@@ -74,7 +79,9 @@ type alias Forks =
 
 
 {-| Pathを分かれ道の集合へと変換する。
-toForks [0,1,2] -- Set.fromList [[], [0], [0,1]]
+
+    toForks [ 0, 1, 2 ] == Set.fromList [ [], [ 0 ], [ 0, 1 ] ]
+
 -}
 toForks : Path -> Forks
 toForks path =

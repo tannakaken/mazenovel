@@ -10,7 +10,7 @@ module Maze exposing
     , randomChooser
     , Area
     , getArea
-    , novelPath
+    , makeExit
     , choiceOfNextCell
     , vonNeumannNeighborhood
     , canDig
@@ -25,7 +25,7 @@ module Maze exposing
 @docs Maze
 
 
-# Crate
+# Create
 
 @docs empty
 @docs insert
@@ -50,9 +50,9 @@ module Maze exposing
 @docs getArea
 
 
-# Path
+# Exit
 
-@docs novelPath
+@docs makeExit
 @docs choiceOfNextCell
 
 
@@ -88,12 +88,13 @@ type alias Cell =
     　　どこ
 
 は、
-Maze.empty
-|> Maze.insert ( 1, 1 ) '出'
-|> Maze.insert ( 1, 2 ) '口'
-|> Maze.insert ( 2, 2 ) 'は'
-|> Maze.insert ( 2, 3 ) 'ど'
-|> Maze.insert ( 3, 3 ) 'こ'
+
+    Maze.empty
+        |> Maze.insert ( 1, 1 ) '出'
+        |> Maze.insert ( 1, 2 ) '口'
+        |> Maze.insert ( 2, 2 ) 'は'
+        |> Maze.insert ( 2, 3 ) 'ど'
+        |> Maze.insert ( 3, 3 ) 'こ'
 
 によって作れる。
 
@@ -135,22 +136,22 @@ get cell maze =
 -- CHOOSE
 
 
-{-| 空でないCellの集合から一つCellを選択して新しいChooserと一緒に返す。
-Cellの集合が空の時は、Nothingを返す。
-Cellの集合か空でない時は、Nothingを返してはいけない。
+{-| 空でない`Cell`の集合から一つCellを選択して新しい`Chooser`と一緒に返す。
+`Cell`の集合が空の時は、`Nothing`を返す。
+`Cell`の集合か空でない時は、`Nothing`を返してはいけない。
 -}
 type Chooser
     = Chooser (Set Cell -> Maybe ( Cell, Chooser ))
 
 
-{-| Chooserを使って、Cellを選択する。
+{-| `Chooser`を使って、`Cell`を選択する。
 -}
 choose : Chooser -> Set Cell -> Maybe ( Cell, Chooser )
 choose (Chooser chooser) cells =
     chooser cells
 
 
-{-| Cellを選択せずに、新しいChooserだけを手に入れる。
+{-| `Cell`を選択せずに、新しい`Chooser`だけを手に入れる。
 -}
 next : Chooser -> Chooser
 next chooser =
@@ -163,7 +164,7 @@ next chooser =
             chooser
 
 
-{-| 擬似乱数を使用したChooser。
+{-| 擬似乱数を使用した`Chooser`。
 -}
 randomChooser : Random.Seed -> Chooser
 randomChooser seed =
@@ -222,18 +223,23 @@ type alias Area =
     　中で
 
 のAreaを求めると
-let maze = Maze.empty
-|> Maze.insert ( 2, 0 ) '迷'
-|> Maze.insert ( 2, 1 ) '路'
-|> Maze.insert ( 1, 1 ) 'の'
-|> Maze.insert ( 0, 1 ) '中'
-|> Maze.insert ( 0, 2 ) 'で'
-in
-Maze.getArea maze -- { top = 2
--- , right = 2
--- , bottom = 0
--- , left = 0
--- }
+
+    let
+        maze =
+            Maze.empty
+                |> Maze.insert ( 2, 0 ) '迷'
+                |> Maze.insert ( 2, 1 ) '路'
+                |> Maze.insert ( 1, 1 ) 'の'
+                |> Maze.insert ( 0, 1 ) '中'
+                |> Maze.insert ( 0, 2 ) 'で'
+    in
+    Maze.getArea maze
+        == { top = 2
+           , right = 2
+           , bottom = 0
+           , left = 0
+           }
+
 となる。
 
 -}
@@ -245,7 +251,7 @@ getArea maze =
 
 
 
--- PATH
+-- EXITH
 
 
 {-| 迷路が完成した場合と、後戻りが必要な場合を分ける。
@@ -264,8 +270,11 @@ headChar =
 
 
 {-| 文字列から一本道の迷路を作る。
+これが迷路の出口への道になる
 例えば、
-novelPath chooser "おはよう"
+
+    novelPath chooser "おはよう"
+
 とすることで
 
     お
@@ -275,8 +284,8 @@ novelPath chooser "おはよう"
 というような一本道の迷路が出来上がる。
 
 -}
-novelPath : Chooser -> String -> Maze
-novelPath chooser novel =
+makeExit : Chooser -> String -> Maze
+makeExit chooser novel =
     if String.isEmpty novel then
         empty
 
@@ -288,7 +297,7 @@ novelPath chooser novel =
             rest =
                 String.dropLeft 1 novel
         in
-        case novelPathAux chooser c rest empty Set.empty ( 0, 0 ) of
+        case makeExitAux chooser c rest empty Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}
             MazeResult maze ->
                 maze
@@ -299,13 +308,13 @@ novelPath chooser novel =
                     nextChooser =
                         next chooser
                 in
-                novelPath nextChooser novel
+                makeExit nextChooser novel
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-novelPathAux : Chooser -> Char -> String -> Maze -> Set Cell -> Cell -> MazeResult
-novelPathAux chooser currentChar currentRest maze exceptions currentCell =
+makeExitAux : Chooser -> Char -> String -> Maze -> Set Cell -> Cell -> MazeResult
+makeExitAux chooser currentChar currentRest maze exceptions currentCell =
     if String.length currentRest == 0 then
         MazeResult (insert currentCell currentChar maze)
 
@@ -335,7 +344,7 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
 
                     {- 道をさらに伸ばす。 -}
                     result =
-                        novelPathAux nextChooser c rest nextMaze Set.empty nextCell
+                        makeExitAux nextChooser c rest nextMaze Set.empty nextCell
                 in
                 case result of
                     {- 逆戻りの途中の時はさらに逆戻りする。
@@ -343,7 +352,7 @@ novelPathAux chooser currentChar currentRest maze exceptions currentCell =
                     -}
                     BackTrack n ->
                         if n == 0 then
-                            novelPathAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
+                            makeExitAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
 
                         else
                             BackTrack (n - 1)

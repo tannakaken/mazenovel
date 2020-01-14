@@ -41,21 +41,21 @@ sampleMaze cells =
 suite : Test
 suite =
     describe "The Maze module"
-        [ describe "Maze.novelPath"
+        [ describe "Maze.makeExit"
             [ test "make one cell path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.novelPath testChooser "h")
+                        (Maze.makeExit testChooser "h")
                         (Dict.fromList [ ( ( 0, 0 ), 'h' ) ])
             , test "make two cell path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.novelPath testChooser "he")
+                        (Maze.makeExit testChooser "he")
                         (Dict.fromList [ ( ( 0, 0 ), 'h' ), ( ( -1, 0 ), 'e' ) ])
             , test "make three cell path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.novelPath testChooser "hel")
+                        (Maze.makeExit testChooser "hel")
                         (Dict.fromList [ ( ( 0, 0 ), 'h' ), ( ( -1, 0 ), 'e' ), ( ( -2, 0 ), 'l' ) ])
             ]
         , describe "Maze.choiceOfNextCell"
