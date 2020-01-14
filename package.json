@@ -5,6 +5,7 @@
   "scripts": {
     "test": "npx elm-test",
     "check-format": "npx elm-format . --validate"
+    "doc-preview": "npx elm-doc-preview"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   "author": "Tannakian Cat <tannakaken@gmail.com> (https://github.com/tannakaken/)",
   "license": "CC-BY-SA-4.0",
   "devDependencies": {
+    "elm-doc-preview": "^3.0.4",
     "elm-format": "^0.8.2",
     "elm-test": "^0.19.1-revision2"
   },

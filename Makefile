@@ -31,3 +31,7 @@ test: $(SRC) $(TESTS)
 .PHONY: format
 format:
 	npx elm-format . --yes
+
+.PHONY: doc-preview
+doc-preview:
+	npx elm-doc-preview

@@ -1,10 +1,54 @@
-module Maze exposing (..)
+module Maze exposing
+    ( get
+    , novelPath
+    , Area, Cell, Maze, choose, empty, getArea, insert, next, randomChooser
+    )
+
+{-| 小説を二次元のセル上に配置した小説迷路に関するモジュール。
+
+
+# Maze
+
+@docs Cell
+@docs Maze
+
+# Crate
+
+@docs empty
+@docs insert
+
+# Get
+
+@docs get
+
+
+# Choose
+
+@docs choose
+@docs next
+@docs randomChooser
+
+
+# Area
+
+@docs Area
+@docs getArea
+
+# Path
+
+@docs novelPath
+
+-}
 
 import Array exposing (Array)
 import Dict exposing (Dict)
 import Random
 import Set exposing (Set)
 import Util exposing (getNth)
+
+
+
+-- MAZE
 
 
 {-| 迷路のセルの座標を表す。
@@ -14,9 +58,31 @@ type alias Cell =
 
 
 {-| Cellに文字を対応させて、道に文字列が並んだ小説迷路を表す。
+例えば小説迷路
+
+
+    　出
+    　口は
+    　　どこ
+
+
+は、
+Maze.empty
+|> Maze.insert ( 1, 1 ) '出'
+|> Maze.insert ( 1, 2 ) '口'
+|> Maze.insert ( 2, 2 ) 'は'
+|> Maze.insert ( 2, 3 ) 'ど'
+|> Maze.insert ( 3, 3 ) 'こ'
+
+によって作れる。
+
 -}
 type alias Maze =
     Dict Cell Char
+
+
+
+-- CREATE
 
 
 {-| 空の迷路。
@@ -33,11 +99,19 @@ insert cell c maze =
     Dict.insert cell c maze
 
 
+
+-- GET
+
+
 {-| Cellに格納された文字を取得する。
 -}
 get : Cell -> Maze -> Maybe Char
 get cell maze =
     Dict.get cell maze
+
+
+
+-- CHOOSE
 
 
 {-| 空でないCellの集合から一つCellを選択して新しいChooserと一緒に返す。
@@ -106,6 +180,10 @@ randomChooser seed =
     Chooser chooser
 
 
+
+-- AREA
+
+
 {-| 迷路の範囲を表す型。
 -}
 type alias Area =
@@ -117,12 +195,36 @@ type alias Area =
 
 
 {-| その迷路から、その迷路が含まれる範囲を返す。
+
+    迷路
+    　の
+    　中で
+
+のAreaを求めると
+let maze = Maze.empty
+|> Maze.insert ( 2, 0 ) '迷'
+|> Maze.insert ( 2, 1 ) '路'
+|> Maze.insert ( 1, 1 ) 'の'
+|> Maze.insert ( 0, 1 ) '中'
+|> Maze.insert ( 0, 2 ) 'で'
+in
+Maze.getArea maze -- { top = 2
+-- , right = 2
+-- , bottom = 0
+-- , left = 0
+-- }
+となる。
+
 -}
 getArea : Maze -> Area
 getArea maze =
     Dict.keys maze
         |> List.foldl (\( x, y ) { top, right, bottom, left } -> Area (max y top) (max x right) (min y bottom) (min x left))
             (Area 0 0 0 0)
+
+
+
+-- PATH
 
 
 {-| 迷路が完成した場合と、後戻りが必要な場合を分ける。
@@ -140,7 +242,17 @@ headChar =
     String.toList >> List.head >> Maybe.withDefault '\u{3000}'
 
 
-{-| 文字列から迷路の一本道を作る。
+{-| 文字列から一本道の迷路を作る。
+例えば、
+novelPath chooser "おはよう"
+とすることで
+
+    お
+    はよ
+    　う
+
+というような一本道の迷路が出来上がる。
+
 -}
 novelPath : Chooser -> String -> Maze
 novelPath chooser novel =
@@ -238,7 +350,18 @@ choiceOfNextCell maze exceptions currentCell =
            )
 
 
+
+-- NEIGHBORHOOD
+
+
 {-| セルのフォン・ノイマン近傍
+
+     ■
+    ■□■
+     ■
+
+Cell`□`の周りの上下左右の`■`四つのこと。
+
 -}
 vonNeumannNeighborhood : Cell -> Set Cell
 vonNeumannNeighborhood cell =
@@ -270,6 +393,17 @@ inArea ( x, y ) =
 
 
 {-| 既に作られた道になっているか。
+例えば
+"既に道だ"
+という文字列を
+
+    既に道
+
+と道を作って、
+Maze.insert (1,0) 'だ'
+としようとすると、既に道になっているCellへ後戻りしようとしているので、
+これは正しい道の堀り方ではない。
+
 -}
 onExistingPath : Maze -> Cell -> Bool
 onExistingPath maze cell =
@@ -277,6 +411,16 @@ onExistingPath maze cell =
 
 
 {-| 一本道になるか。
+例えば
+"一本道にならない"
+という文字列を
+
+    一いな
+    本　ら
+    道にな
+
+と道を作ると一本道にならないので、正しい道の掘り方ではない。
+
 -}
 doesBecomeSinglePath : Maze -> Cell -> Cell -> Bool
 doesBecomeSinglePath maze previousCell cell =
