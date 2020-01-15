@@ -7,7 +7,7 @@ import Html exposing (Html, a, article, div, span, text)
 import Html.Attributes exposing (class, href)
 import Http
 import Json.Decode as JD exposing (Decoder)
-import Maze exposing (Area, Cell, Maze)
+import Maze exposing (Area, Coordinates, Maze)
 import Novel
 import Path exposing (Path)
 import Random
@@ -298,14 +298,14 @@ mazeColumnsAux area maze row column acc =
         acc
 
     else
-        mazeColumnsAux area maze row (column + 1) (acc ++ [ mazeCell ( column, row ) maze ])
+        mazeColumnsAux area maze row (column + 1) (acc ++ [ mazeCoordinates ( column, row ) maze ])
 
 
-mazeCell : Cell -> Maze -> Html msg
-mazeCell cell maze =
+mazeCoordinates : Coordinates -> Maze -> Html msg
+mazeCoordinates coordinates maze =
     let
         maybe =
-            Maze.get cell maze
+            Maze.get coordinates maze
     in
     case maybe of
         Nothing ->

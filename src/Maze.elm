@@ -1,17 +1,10 @@
 module Maze exposing
-    ( Cell
-    , Maze
-    , empty
-    , insert
+    ( Coordinates, Maze
+    , empty, insert
     , get
-    , Chooser(..)
-    , choose
-    , next
-    , randomChooser
-    , Area
-    , getArea
+    , Area, getArea
     , makeExit
-    , choiceOfNextCell
+    , Chooser(..), choose, next, randomChooser, choiceOfNextCoordinates
     , vonNeumannNeighborhood
     , canDig
     )
@@ -21,14 +14,12 @@ module Maze exposing
 
 # Maze
 
-@docs Cell
-@docs Maze
+@docs Coordinates, Maze
 
 
 # Create
 
-@docs empty
-@docs insert
+@docs empty, insert
 
 
 # Get
@@ -36,29 +27,28 @@ module Maze exposing
 @docs get
 
 
-# Choose
-
-@docs Chooser
-@docs choose
-@docs next
-@docs randomChooser
-
-
 # Area
 
-@docs Area
-@docs getArea
+@docs Area, getArea
 
 
 # Exit
 
 @docs makeExit
-@docs choiceOfNextCell
+
+
+# Choose
+
+@docs Chooser, choose, next, randomChooser, choiceOfNextCoordinates
 
 
 # Neighborhood
 
 @docs vonNeumannNeighborhood
+
+
+# Dig
+
 @docs canDig
 
 -}
@@ -74,13 +64,13 @@ import Util exposing (getNth)
 -- MAZE
 
 
-{-| 迷路のセルの座標を表す。
+{-| 迷路の`Cell`の座標を表す。
 -}
-type alias Cell =
+type alias Coordinates =
     ( Int, Int )
 
 
-{-| Cellに文字を対応させて、道に文字列が並んだ小説迷路を表す。
+{-| `Coordinates`に文字を対応させて、道に文字列が並んだ小説迷路を表す。
 例えば小説迷路
 
     　出
@@ -100,7 +90,7 @@ type alias Cell =
 
 -}
 type alias Maze =
-    Dict Cell Char
+    Dict Coordinates Char
 
 
 
@@ -116,90 +106,20 @@ empty =
 
 {-| 迷路のセルに文字を挿入する。
 -}
-insert : Cell -> Char -> Maze -> Maze
-insert cell c maze =
-    Dict.insert cell c maze
+insert : Coordinates -> Char -> Maze -> Maze
+insert coordinates c maze =
+    Dict.insert coordinates c maze
 
 
 
 -- GET
 
 
-{-| Cellに格納された文字を取得する。
+{-| Coordinatesに格納された文字を取得する。
 -}
-get : Cell -> Maze -> Maybe Char
-get cell maze =
-    Dict.get cell maze
-
-
-
--- CHOOSE
-
-
-{-| 空でない`Cell`の集合から一つCellを選択して新しい`Chooser`と一緒に返す。
-`Cell`の集合が空の時は、`Nothing`を返す。
-`Cell`の集合か空でない時は、`Nothing`を返してはいけない。
--}
-type Chooser
-    = Chooser (Set Cell -> Maybe ( Cell, Chooser ))
-
-
-{-| `Chooser`を使って、`Cell`を選択する。
--}
-choose : Chooser -> Set Cell -> Maybe ( Cell, Chooser )
-choose (Chooser chooser) cells =
-    chooser cells
-
-
-{-| `Cell`を選択せずに、新しい`Chooser`だけを手に入れる。
--}
-next : Chooser -> Chooser
-next chooser =
-    case choose chooser (Set.fromList [ ( 0, 0 ) ]) of
-        Just ( _, nextChooser ) ->
-            nextChooser
-
-        {- Chooserが正しく設計されていれば、この節は実行されない。 -}
-        Nothing ->
-            chooser
-
-
-{-| 擬似乱数を使用した`Chooser`。
--}
-randomChooser : Random.Seed -> Chooser
-randomChooser seed =
-    let
-        chooser =
-            \set ->
-                let
-                    list =
-                        Set.toList set
-
-                    length =
-                        Set.size set
-                in
-                if length == 0 then
-                    Nothing
-
-                else
-                    let
-                        indexGenerator =
-                            Random.int 0 (length - 1)
-
-                        ( index, nextSeed ) =
-                            Random.step indexGenerator seed
-
-                        maybe =
-                            getNth index list
-                    in
-                    case maybe of
-                        Nothing ->
-                            Nothing
-
-                        Just x ->
-                            Just ( x, randomChooser nextSeed )
-    in
-    Chooser chooser
+get : Coordinates -> Maze -> Maybe Char
+get coordinates maze =
+    Dict.get coordinates maze
 
 
 
@@ -251,7 +171,7 @@ getArea maze =
 
 
 
--- EXITH
+-- EXIT
 
 
 {-| 迷路が完成した場合と、後戻りが必要な場合を分ける。
@@ -313,17 +233,17 @@ makeExit chooser novel =
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-makeExitAux : Chooser -> Char -> String -> Maze -> Set Cell -> Cell -> MazeResult
-makeExitAux chooser currentChar currentRest maze exceptions currentCell =
+makeExitAux : Chooser -> Char -> String -> Maze -> Set Coordinates -> Coordinates -> MazeResult
+makeExitAux chooser currentChar currentRest maze exceptions currentCoordinates =
     if String.length currentRest == 0 then
-        MazeResult (insert currentCell currentChar maze)
+        MazeResult (insert currentCoordinates currentChar maze)
 
     else
         let
-            maybeNextCell =
-                chooseNextCell chooser maze exceptions currentCell
+            maybeNextCoordinates =
+                chooseNextCoordinates chooser maze exceptions currentCoordinates
         in
-        case maybeNextCell of
+        case maybeNextCoordinates of
             {- 選べる道が存在しないとき、つまり行き止まりの時は、
                他の道を選んでも行き止まりの可能性が高いので定数だけ逆戻りする。
             -}
@@ -331,7 +251,7 @@ makeExitAux chooser currentChar currentRest maze exceptions currentCell =
                 BackTrack 10
 
             {- 試しに選んだ道を伸ばしてみる。 -}
-            Just ( nextCell, nextChooser ) ->
+            Just ( nextCoordinates, nextChooser ) ->
                 let
                     c =
                         headChar currentRest
@@ -340,11 +260,11 @@ makeExitAux chooser currentChar currentRest maze exceptions currentCell =
                         String.dropLeft 1 currentRest
 
                     nextMaze =
-                        insert currentCell currentChar maze
+                        insert currentCoordinates currentChar maze
 
                     {- 道をさらに伸ばす。 -}
                     result =
-                        makeExitAux nextChooser c rest nextMaze Set.empty nextCell
+                        makeExitAux nextChooser c rest nextMaze Set.empty nextCoordinates
                 in
                 case result of
                     {- 逆戻りの途中の時はさらに逆戻りする。
@@ -352,7 +272,7 @@ makeExitAux chooser currentChar currentRest maze exceptions currentCell =
                     -}
                     BackTrack n ->
                         if n == 0 then
-                            makeExitAux chooser currentChar currentRest maze (Set.insert nextCell exceptions) currentCell
+                            makeExitAux chooser currentChar currentRest maze (Set.insert nextCoordinates exceptions) currentCoordinates
 
                         else
                             BackTrack (n - 1)
@@ -362,21 +282,91 @@ makeExitAux chooser currentChar currentRest maze exceptions currentCell =
                         result
 
 
+
+-- CHOOSE
+
+
+{-| 空でない`Coordinates`の集合から一つCoordinatesを選択して新しい`Chooser`と一緒に返す。
+`Coordinates`の集合が空の時は、`Nothing`を返す。
+`Coordinates`の集合か空でない時は、`Nothing`を返してはいけない。
+-}
+type Chooser
+    = Chooser (Set Coordinates -> Maybe ( Coordinates, Chooser ))
+
+
+{-| `Chooser`を使って、`Coordinates`を選択する。
+-}
+choose : Chooser -> Set Coordinates -> Maybe ( Coordinates, Chooser )
+choose (Chooser chooser) coordinatess =
+    chooser coordinatess
+
+
+{-| `Coordinates`を選択せずに、新しい`Chooser`だけを手に入れる。
+-}
+next : Chooser -> Chooser
+next chooser =
+    case choose chooser (Set.fromList [ ( 0, 0 ) ]) of
+        Just ( _, nextChooser ) ->
+            nextChooser
+
+        {- Chooserが正しく設計されていれば、この節は実行されない。 -}
+        Nothing ->
+            chooser
+
+
+{-| 擬似乱数を使用した`Chooser`。
+-}
+randomChooser : Random.Seed -> Chooser
+randomChooser seed =
+    let
+        chooser =
+            \set ->
+                let
+                    list =
+                        Set.toList set
+
+                    length =
+                        Set.size set
+                in
+                if length == 0 then
+                    Nothing
+
+                else
+                    let
+                        indexGenerator =
+                            Random.int 0 (length - 1)
+
+                        ( index, nextSeed ) =
+                            Random.step indexGenerator seed
+
+                        maybe =
+                            getNth index list
+                    in
+                    case maybe of
+                        Nothing ->
+                            Nothing
+
+                        Just x ->
+                            Just ( x, randomChooser nextSeed )
+    in
+    Chooser chooser
+
+
 {-| 既に作られた迷路と候補の除外リストと現在のセルから次のセルをChooserを使って選べたなら選ぶ。
 -}
-chooseNextCell : Chooser -> Maze -> Set Cell -> Cell -> Maybe ( Cell, Chooser )
-chooseNextCell chooser maze exceptions currentCell =
-    choiceOfNextCell maze exceptions currentCell |> choose chooser
+chooseNextCoordinates : Chooser -> Maze -> Set Coordinates -> Coordinates -> Maybe ( Coordinates, Chooser )
+chooseNextCoordinates chooser maze exceptions currentCoordinates =
+    choiceOfNextCoordinates maze exceptions currentCoordinates |> choose chooser
 
 
-{-| 既に作られた迷路と候補の除外リストと現在のCellから、次のセルの候補を返す。
+{-| 既に作られた迷路と候補の除外リストと現在のCoordinatesから、次のセルの候補を返す。
 -}
-choiceOfNextCell : Maze -> Set Cell -> Cell -> Set Cell
-choiceOfNextCell maze exceptions currentCell =
-    vonNeumannNeighborhood currentCell
+choiceOfNextCoordinates : Maze -> Set Coordinates -> Coordinates -> Set Coordinates
+choiceOfNextCoordinates maze exceptions currentCoordinates =
+    vonNeumannNeighborhood currentCoordinates
         |> (\set ->
                 Set.diff set exceptions
-                    |> Set.filter (\cell -> canDig maze currentCell cell)
+                    |> Set.filter (\coordinates -> canDig maze currentCoordinates coordinates)
            )
 
 
@@ -390,16 +380,20 @@ choiceOfNextCell maze exceptions currentCell =
     ■□■
      ■
 
-Cell`□`の周りの上下左右の`■`四つのこと。
+Coordinates`□`の周りの上下左右の`■`四つのこと。
 
 -}
-vonNeumannNeighborhood : Cell -> Set Cell
-vonNeumannNeighborhood cell =
+vonNeumannNeighborhood : Coordinates -> Set Coordinates
+vonNeumannNeighborhood coordinates =
     let
         ( x, y ) =
-            cell
+            coordinates
     in
     Set.fromList [ ( x + 1, y ), ( x - 1, y ), ( x, y + 1 ), ( x, y - 1 ) ]
+
+
+
+-- DIG
 
 
 {-| 迷路のセルが掘って道にできるかどうかを返す。
@@ -410,14 +404,14 @@ vonNeumannNeighborhood cell =
   - 既に掘られて道になっているセルで一つ前のセルでないセルと隣接していない
 
 -}
-canDig : Maze -> Cell -> Cell -> Bool
-canDig maze previousCell cell =
-    inArea cell && (not <| onExistingPath maze cell) && doesBecomeSinglePath maze previousCell cell
+canDig : Maze -> Coordinates -> Coordinates -> Bool
+canDig maze previousCoordinates coordinates =
+    inArea coordinates && (not <| onExistingPath maze coordinates) && doesBecomeSinglePath maze previousCoordinates coordinates
 
 
 {-| エリア内にあるか。
 -}
-inArea : Cell -> Bool
+inArea : Coordinates -> Bool
 inArea ( x, y ) =
     y >= 0
 
@@ -430,14 +424,16 @@ inArea ( x, y ) =
     既に道
 
 と道を作って、
-Maze.insert (1,0) 'だ'
-としようとすると、既に道になっているCellへ後戻りしようとしているので、
+
+    Maze.insert ( 1, 0 ) 'だ'
+
+としようとすると、既に道になっている`Coordinates`へ後戻りしようとしているので、
 これは正しい道の堀り方ではない。
 
 -}
-onExistingPath : Maze -> Cell -> Bool
-onExistingPath maze cell =
-    Dict.member cell maze
+onExistingPath : Maze -> Coordinates -> Bool
+onExistingPath maze coordinates =
+    Dict.member coordinates maze
 
 
 {-| 一本道になるか。
@@ -452,13 +448,13 @@ onExistingPath maze cell =
 と道を作ると一本道にならないので、正しい道の掘り方ではない。
 
 -}
-doesBecomeSinglePath : Maze -> Cell -> Cell -> Bool
-doesBecomeSinglePath maze previousCell cell =
+doesBecomeSinglePath : Maze -> Coordinates -> Coordinates -> Bool
+doesBecomeSinglePath maze previousCoordinates coordinates =
     let
         neighborhood =
-            vonNeumannNeighborhood cell
+            vonNeumannNeighborhood coordinates
 
         neighborhoodWithoutPrevious =
-            Set.remove previousCell neighborhood
+            Set.remove previousCoordinates neighborhood
     in
     Set.filter (onExistingPath maze) neighborhoodWithoutPrevious |> Set.isEmpty
