@@ -232,6 +232,7 @@ headChar =
     　う
 
 というような一本道の迷路が出来上がる。
+ここで`'お'`の場所が`Start`である。
 
 -}
 makeExit : Chooser -> String -> Maze
@@ -241,11 +242,14 @@ makeExit chooser novel =
 
     else
         let
+            revNovel =
+                String.reverse novel
+
             c =
-                headChar novel
+                headChar revNovel
 
             rest =
-                String.dropLeft 1 novel
+                String.dropLeft 1 revNovel
         in
         case makeExitAux chooser c rest empty Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}

@@ -52,8 +52,8 @@ suite =
                     Expect.equal
                         (Maze.makeExit testChooser "he")
                         (Dict.fromList
-                            [ ( ( 0, 0 ), Maze.Cell 'h' Maze.Space )
-                            , ( ( -1, 0 ), Maze.Cell 'e' Maze.Start )
+                            [ ( ( 0, 0 ), Maze.Cell 'e' Maze.Space )
+                            , ( ( -1, 0 ), Maze.Cell 'h' Maze.Start )
                             ]
                         )
             , test "make three coordinates path" <|
@@ -61,9 +61,9 @@ suite =
                     Expect.equal
                         (Maze.makeExit testChooser "hel")
                         (Dict.fromList
-                            [ ( ( 0, 0 ), Maze.Cell 'h' Maze.Space )
+                            [ ( ( 0, 0 ), Maze.Cell 'l' Maze.Space )
                             , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
-                            , ( ( -2, 0 ), Maze.Cell 'l' Maze.Start )
+                            , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
                             ]
                         )
             ]
