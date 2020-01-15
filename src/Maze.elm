@@ -1,7 +1,7 @@
 module Maze exposing
-    ( Coordinates, Maze
+    ( Coordinates, Kind(..), Cell, Maze
     , empty, insert
-    , get
+    , getChar, getKind
     , Area, getArea
     , makeExit
     , Chooser(..), choose, next, randomChooser, choiceOfNextCoordinates
@@ -14,7 +14,7 @@ module Maze exposing
 
 # Maze
 
-@docs Coordinates, Maze
+@docs Coordinates, Kind, Cell, Maze
 
 
 # Create
@@ -24,7 +24,7 @@ module Maze exposing
 
 # Get
 
-@docs get
+@docs getChar, getKind
 
 
 # Area
@@ -64,10 +64,27 @@ import Util exposing (getNth)
 -- MAZE
 
 
-{-| 迷路の`Cell`の座標を表す。
+{-| `Maze`の`Cell`の座標を表す。
 -}
 type alias Coordinates =
     ( Int, Int )
+
+
+{-| `Maze`の`Cell`の種類を表す。
+-}
+type Kind
+    = Wall
+    | Space
+    | Start
+    | Fork
+
+
+{-| `Maze`の一つ一つの区画の内容を表す。。
+-}
+type alias Cell =
+    { char : Char
+    , kind : Kind
+    }
 
 
 {-| `Coordinates`に文字を対応させて、道に文字列が並んだ小説迷路を表す。
@@ -80,17 +97,17 @@ type alias Coordinates =
 は、
 
     Maze.empty
-        |> Maze.insert ( 1, 1 ) '出'
-        |> Maze.insert ( 1, 2 ) '口'
-        |> Maze.insert ( 2, 2 ) 'は'
-        |> Maze.insert ( 2, 3 ) 'ど'
-        |> Maze.insert ( 3, 3 ) 'こ'
+        |> Maze.insert ( 1, 1 ) (Cell '出' Start)
+        |> Maze.insert ( 1, 2 ) (Cell '口' Space)
+        |> Maze.insert ( 2, 2 ) (Cell 'は' Space)
+        |> Maze.insert ( 2, 3 ) (Cell 'ど' Space)
+        |> Maze.insert ( 3, 3 ) (Cell 'こ' Space)
 
 によって作れる。
 
 -}
 type alias Maze =
-    Dict Coordinates Char
+    Dict Coordinates Cell
 
 
 
@@ -106,7 +123,7 @@ empty =
 
 {-| 迷路のセルに文字を挿入する。
 -}
-insert : Coordinates -> Char -> Maze -> Maze
+insert : Coordinates -> Cell -> Maze -> Maze
 insert coordinates c maze =
     Dict.insert coordinates c maze
 
@@ -115,11 +132,24 @@ insert coordinates c maze =
 -- GET
 
 
-{-| Coordinatesに格納された文字を取得する。
+{-| `Coordinates`に格納された文字を取得する。
+デフォルト値は全角空白。
 -}
-get : Coordinates -> Maze -> Maybe Char
-get coordinates maze =
+getChar : Coordinates -> Maze -> Char
+getChar coordinates maze =
     Dict.get coordinates maze
+        |> Maybe.map .char
+        |> Maybe.withDefault '\u{3000}'
+
+
+{-| `Coordinates`に格納された`Cell`の種類を取得する。
+デフォルト値は`Wall`。
+-}
+getKind : Coordinates -> Maze -> Kind
+getKind coordinates maze =
+    Dict.get coordinates maze
+        |> Maybe.map .kind
+        |> Maybe.withDefault Wall
 
 
 
@@ -147,11 +177,11 @@ type alias Area =
     let
         maze =
             Maze.empty
-                |> Maze.insert ( 2, 0 ) '迷'
-                |> Maze.insert ( 2, 1 ) '路'
-                |> Maze.insert ( 1, 1 ) 'の'
-                |> Maze.insert ( 0, 1 ) '中'
-                |> Maze.insert ( 0, 2 ) 'で'
+                |> Maze.insert ( 2, 0 ) (Cell '迷' Start)
+                |> Maze.insert ( 2, 1 ) (Cell '路' Space)
+                |> Maze.insert ( 1, 1 ) (Cell 'の' Space)
+                |> Maze.insert ( 0, 1 ) (Cell '中' Space)
+                |> Maze.insert ( 0, 2 ) (Cell 'で' Space)
     in
     Maze.getArea maze
         == { top = 2
@@ -236,7 +266,7 @@ makeExit chooser novel =
 makeExitAux : Chooser -> Char -> String -> Maze -> Set Coordinates -> Coordinates -> MazeResult
 makeExitAux chooser currentChar currentRest maze exceptions currentCoordinates =
     if String.length currentRest == 0 then
-        MazeResult (insert currentCoordinates currentChar maze)
+        MazeResult (insert currentCoordinates (Cell currentChar Start) maze)
 
     else
         let
@@ -260,7 +290,7 @@ makeExitAux chooser currentChar currentRest maze exceptions currentCoordinates =
                         String.dropLeft 1 currentRest
 
                     nextMaze =
-                        insert currentCoordinates currentChar maze
+                        insert currentCoordinates (Cell currentChar Space) maze
 
                     {- 道をさらに伸ばす。 -}
                     result =

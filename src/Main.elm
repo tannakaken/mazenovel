@@ -304,12 +304,26 @@ mazeColumnsAux area maze row column acc =
 mazeCoordinates : Coordinates -> Maze -> Html msg
 mazeCoordinates coordinates maze =
     let
-        maybe =
-            Maze.get coordinates maze
-    in
-    case maybe of
-        Nothing ->
-            span [ class "wall" ] [ text "\u{3000}" ]
+        char =
+            Maze.getChar coordinates maze
 
-        Just char ->
-            span [ class "path" ] [ String.fromChar char |> text ]
+        kind =
+            Maze.getKind coordinates maze
+    in
+    case kind of
+        Maze.Wall ->
+            span [ class "wall" ] [ charToText char ]
+
+        Maze.Space ->
+            span [ class "space" ] [ charToText char ]
+
+        Maze.Start ->
+            span [ class "start" ] [ charToText char ]
+
+        Maze.Fork ->
+            span [ class "fork" ] [ charToText char ]
+
+
+charToText : Char -> Html msg
+charToText =
+    String.fromChar >> text

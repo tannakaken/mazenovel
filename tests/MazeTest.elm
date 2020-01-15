@@ -11,13 +11,13 @@ import Test exposing (..)
 testChooser : Maze.Chooser
 testChooser =
     Maze.Chooser
-        (\coordinatesset ->
+        (\coordinatesSet ->
             let
-                coordinateslist =
-                    Set.toList coordinatesset
+                coordinatesList =
+                    Set.toList coordinatesSet
 
                 x =
-                    List.head coordinateslist
+                    List.head coordinatesList
             in
             case x of
                 Nothing ->
@@ -35,7 +35,7 @@ sampleMaze coordinatess =
             Dict.empty
 
         head :: rest ->
-            Dict.insert head 'a' <| sampleMaze rest
+            Dict.insert head (Maze.Cell 'a' Maze.Space) <| sampleMaze rest
 
 
 suite : Test
@@ -46,17 +46,26 @@ suite =
                 \_ ->
                     Expect.equal
                         (Maze.makeExit testChooser "h")
-                        (Dict.fromList [ ( ( 0, 0 ), 'h' ) ])
+                        (Dict.fromList [ ( ( 0, 0 ), Maze.Cell 'h' Maze.Start ) ])
             , test "make two coordinates path" <|
                 \_ ->
                     Expect.equal
                         (Maze.makeExit testChooser "he")
-                        (Dict.fromList [ ( ( 0, 0 ), 'h' ), ( ( -1, 0 ), 'e' ) ])
+                        (Dict.fromList
+                            [ ( ( 0, 0 ), Maze.Cell 'h' Maze.Space )
+                            , ( ( -1, 0 ), Maze.Cell 'e' Maze.Start )
+                            ]
+                        )
             , test "make three coordinates path" <|
                 \_ ->
                     Expect.equal
                         (Maze.makeExit testChooser "hel")
-                        (Dict.fromList [ ( ( 0, 0 ), 'h' ), ( ( -1, 0 ), 'e' ), ( ( -2, 0 ), 'l' ) ])
+                        (Dict.fromList
+                            [ ( ( 0, 0 ), Maze.Cell 'h' Maze.Space )
+                            , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
+                            , ( ( -2, 0 ), Maze.Cell 'l' Maze.Start )
+                            ]
+                        )
             ]
         , describe "Maze.choiceOfNextCoordinates"
             [ test "choice of next coordinates" <|
