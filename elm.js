@@ -6973,40 +6973,94 @@ var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
 };
-var $author$project$Maze$get = F2(
-	function (cell, maze) {
-		return A2($elm$core$Dict$get, cell, maze);
-	});
-var $elm$html$Html$span = _VirtualDom_node('span');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$mazeCell = F2(
-	function (cell, maze) {
-		var maybe = A2($author$project$Maze$get, cell, maze);
-		if (maybe.$ === 'Nothing') {
-			return A2(
-				$elm$html$Html$span,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('wall')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('\u3000')
-					]));
+var $author$project$Main$charToText = A2($elm$core$Basics$composeR, $elm$core$String$fromChar, $elm$html$Html$text);
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
 		} else {
-			var _char = maybe.a;
-			return A2(
-				$elm$html$Html$span,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('path')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(
-						$elm$core$String$fromChar(_char))
-					]));
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Maze$getChar = F2(
+	function (coordinates, maze) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_chr('\u3000'),
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $._char;
+				},
+				A2($elm$core$Dict$get, coordinates, maze)));
+	});
+var $author$project$Maze$Wall = {$: 'Wall'};
+var $author$project$Maze$getKind = F2(
+	function (coordinates, maze) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Maze$Wall,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.kind;
+				},
+				A2($elm$core$Dict$get, coordinates, maze)));
+	});
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$Main$mazeCoordinates = F2(
+	function (coordinates, maze) {
+		var kind = A2($author$project$Maze$getKind, coordinates, maze);
+		var _char = A2($author$project$Maze$getChar, coordinates, maze);
+		switch (kind.$) {
+			case 'Wall':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('wall')
+						]),
+					_List_fromArray(
+						[
+							$author$project$Main$charToText(_char)
+						]));
+			case 'Space':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('space')
+						]),
+					_List_fromArray(
+						[
+							$author$project$Main$charToText(_char)
+						]));
+			case 'Start':
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('start')
+						]),
+					_List_fromArray(
+						[
+							$author$project$Main$charToText(_char)
+						]));
+			default:
+				return A2(
+					$elm$html$Html$span,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('fork')
+						]),
+					_List_fromArray(
+						[
+							$author$project$Main$charToText(_char)
+						]));
 		}
 	});
 var $author$project$Main$mazeColumnsAux = F5(
@@ -7025,7 +7079,7 @@ var $author$project$Main$mazeColumnsAux = F5(
 					_List_fromArray(
 						[
 							A2(
-							$author$project$Main$mazeCell,
+							$author$project$Main$mazeCoordinates,
 							_Utils_Tuple2(column, row),
 							maze)
 						]));
@@ -7092,16 +7146,6 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $author$project$Maze$empty = $elm$core$Dict$empty;
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
@@ -7131,9 +7175,15 @@ var $author$project$Maze$headChar = A2(
 var $author$project$Maze$BackTrack = function (a) {
 	return {$: 'BackTrack', a: a};
 };
+var $author$project$Maze$Cell = F2(
+	function (_char, kind) {
+		return {_char: _char, kind: kind};
+	});
 var $author$project$Maze$MazeResult = function (a) {
 	return {$: 'MazeResult', a: a};
 };
+var $author$project$Maze$Space = {$: 'Space'};
+var $author$project$Maze$Start = {$: 'Start'};
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -7203,8 +7253,8 @@ var $elm$core$Dict$member = F2(
 		}
 	});
 var $author$project$Maze$onExistingPath = F2(
-	function (maze, cell) {
-		return A2($elm$core$Dict$member, cell, maze);
+	function (maze, coordinates) {
+		return A2($elm$core$Dict$member, coordinates, maze);
 	});
 var $elm$core$Set$remove = F2(
 	function (key, _v0) {
@@ -7221,8 +7271,8 @@ var $elm$core$Set$insert = F2(
 var $elm$core$Set$fromList = function (list) {
 	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
 };
-var $author$project$Maze$vonNeumannNeighborhood = function (cell) {
-	var _v0 = cell;
+var $author$project$Maze$vonNeumannNeighborhood = function (coordinates) {
+	var _v0 = coordinates;
 	var x = _v0.a;
 	var y = _v0.b;
 	return $elm$core$Set$fromList(
@@ -7235,9 +7285,9 @@ var $author$project$Maze$vonNeumannNeighborhood = function (cell) {
 			]));
 };
 var $author$project$Maze$doesBecomeSinglePath = F3(
-	function (maze, previousCell, cell) {
-		var neighborhood = $author$project$Maze$vonNeumannNeighborhood(cell);
-		var neighborhoodWithoutPrevious = A2($elm$core$Set$remove, previousCell, neighborhood);
+	function (maze, previousCoordinates, coordinates) {
+		var neighborhood = $author$project$Maze$vonNeumannNeighborhood(coordinates);
+		var neighborhoodWithoutPrevious = A2($elm$core$Set$remove, previousCoordinates, neighborhood);
 		return $elm$core$Set$isEmpty(
 			A2(
 				$elm$core$Set$filter,
@@ -7251,8 +7301,8 @@ var $author$project$Maze$inArea = function (_v0) {
 	return y >= 0;
 };
 var $author$project$Maze$canDig = F3(
-	function (maze, previousCell, cell) {
-		return $author$project$Maze$inArea(cell) && ((!A2($author$project$Maze$onExistingPath, maze, cell)) && A3($author$project$Maze$doesBecomeSinglePath, maze, previousCell, cell));
+	function (maze, previousCoordinates, coordinates) {
+		return $author$project$Maze$inArea(coordinates) && ((!A2($author$project$Maze$onExistingPath, maze, coordinates)) && A3($author$project$Maze$doesBecomeSinglePath, maze, previousCoordinates, coordinates));
 	});
 var $elm$core$Dict$diff = F2(
 	function (t1, t2) {
@@ -7272,53 +7322,61 @@ var $elm$core$Set$diff = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$diff, dict1, dict2));
 	});
-var $author$project$Maze$choiceOfNextCell = F3(
-	function (maze, exceptions, currentCell) {
+var $author$project$Maze$choiceOfNextCoordinates = F3(
+	function (maze, exceptions, currentCoordinates) {
 		return function (set) {
 			return A2(
 				$elm$core$Set$filter,
-				function (cell) {
-					return A3($author$project$Maze$canDig, maze, currentCell, cell);
+				function (coordinates) {
+					return A3($author$project$Maze$canDig, maze, currentCoordinates, coordinates);
 				},
 				A2($elm$core$Set$diff, set, exceptions));
 		}(
-			$author$project$Maze$vonNeumannNeighborhood(currentCell));
+			$author$project$Maze$vonNeumannNeighborhood(currentCoordinates));
 	});
 var $author$project$Maze$choose = F2(
-	function (_v0, cells) {
+	function (_v0, coordinatess) {
 		var chooser = _v0.a;
-		return chooser(cells);
+		return chooser(coordinatess);
 	});
-var $author$project$Maze$chooseNextCell = F4(
-	function (chooser, maze, exceptions, currentCell) {
+var $author$project$Maze$chooseNextCoordinates = F4(
+	function (chooser, maze, exceptions, currentCoordinates) {
 		return A2(
 			$author$project$Maze$choose,
 			chooser,
-			A3($author$project$Maze$choiceOfNextCell, maze, exceptions, currentCell));
+			A3($author$project$Maze$choiceOfNextCoordinates, maze, exceptions, currentCoordinates));
 	});
 var $author$project$Maze$insert = F3(
-	function (cell, c, maze) {
-		return A3($elm$core$Dict$insert, cell, c, maze);
+	function (coordinates, c, maze) {
+		return A3($elm$core$Dict$insert, coordinates, c, maze);
 	});
 var $author$project$Maze$makeExitAux = F6(
-	function (chooser, currentChar, currentRest, maze, exceptions, currentCell) {
+	function (chooser, currentChar, currentRest, maze, exceptions, currentCoordinates) {
 		makeExitAux:
 		while (true) {
 			if (!$elm$core$String$length(currentRest)) {
 				return $author$project$Maze$MazeResult(
-					A3($author$project$Maze$insert, currentCell, currentChar, maze));
+					A3(
+						$author$project$Maze$insert,
+						currentCoordinates,
+						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Start),
+						maze));
 			} else {
-				var maybeNextCell = A4($author$project$Maze$chooseNextCell, chooser, maze, exceptions, currentCell);
-				if (maybeNextCell.$ === 'Nothing') {
+				var maybeNextCoordinates = A4($author$project$Maze$chooseNextCoordinates, chooser, maze, exceptions, currentCoordinates);
+				if (maybeNextCoordinates.$ === 'Nothing') {
 					return $author$project$Maze$BackTrack(10);
 				} else {
-					var _v1 = maybeNextCell.a;
-					var nextCell = _v1.a;
+					var _v1 = maybeNextCoordinates.a;
+					var nextCoordinates = _v1.a;
 					var nextChooser = _v1.b;
 					var rest = A2($elm$core$String$dropLeft, 1, currentRest);
-					var nextMaze = A3($author$project$Maze$insert, currentCell, currentChar, maze);
+					var nextMaze = A3(
+						$author$project$Maze$insert,
+						currentCoordinates,
+						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Space),
+						maze);
 					var c = $author$project$Maze$headChar(currentRest);
-					var result = A6($author$project$Maze$makeExitAux, nextChooser, c, rest, nextMaze, $elm$core$Set$empty, nextCell);
+					var result = A6($author$project$Maze$makeExitAux, nextChooser, c, rest, nextMaze, $elm$core$Set$empty, nextCoordinates);
 					if (result.$ === 'BackTrack') {
 						var n = result.a;
 						if (!n) {
@@ -7326,14 +7384,14 @@ var $author$project$Maze$makeExitAux = F6(
 								$temp$currentChar = currentChar,
 								$temp$currentRest = currentRest,
 								$temp$maze = maze,
-								$temp$exceptions = A2($elm$core$Set$insert, nextCell, exceptions),
-								$temp$currentCell = currentCell;
+								$temp$exceptions = A2($elm$core$Set$insert, nextCoordinates, exceptions),
+								$temp$currentCoordinates = currentCoordinates;
 							chooser = $temp$chooser;
 							currentChar = $temp$currentChar;
 							currentRest = $temp$currentRest;
 							maze = $temp$maze;
 							exceptions = $temp$exceptions;
-							currentCell = $temp$currentCell;
+							currentCoordinates = $temp$currentCoordinates;
 							continue makeExitAux;
 						} else {
 							return $author$project$Maze$BackTrack(n - 1);
