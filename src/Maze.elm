@@ -55,10 +55,11 @@ module Maze exposing
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Path exposing (Path)
 import Random
 import Set exposing (Set)
 import Util exposing (getNth)
-import Path exposing (Path)
+
 
 
 -- MAZE
@@ -235,7 +236,7 @@ headChar =
 ここで`'お'`の場所が`Start`である。
 
 -}
-makeExit : Chooser -> String -> Path ->  Maze
+makeExit : Chooser -> String -> Path -> Maze
 makeExit chooser novel path =
     if String.isEmpty novel then
         empty
@@ -254,7 +255,7 @@ makeExit chooser novel path =
         case makeExitAux chooser c rest empty Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}
             MazeResult maze ->
-                insert (0,0) (Cell (getChar (0,0) maze) (Fork path)) maze 
+                insert ( 0, 0 ) (Cell (getChar ( 0, 0 ) maze) (Fork path)) maze
 
             {- バックトラックで最初まで戻ってしまった時は、別の乱数を使う。 -}
             BackTrack _ ->
