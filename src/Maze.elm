@@ -4,6 +4,7 @@ module Maze exposing
     , getChar, getKind
     , Area, getArea
     , makeExit
+    , makeBranch
     , Chooser(..), choose, next, randomChooser, choiceOfNextCoordinates
     , vonNeumannNeighborhood
     , canDig
@@ -35,6 +36,11 @@ module Maze exposing
 # Exit
 
 @docs makeExit
+
+
+# Branch
+
+@docs makeBranch
 
 
 # Choose
@@ -315,6 +321,39 @@ makeExitAux chooser currentChar currentRest maze exceptions currentCoordinates =
                     {- 道が伸ばせて、迷路が完成したらなら、そのまま返す。 -}
                     _ ->
                         result
+
+
+
+-- BRANCH
+
+
+{-| 迷路のスタート地点を取得する。
+-}
+getStart : Maze -> Coordinates
+getStart =
+    Dict.toList
+        >> List.filterMap
+            (\( coordinates, { kind } ) ->
+                if kind == Start then
+                    Just coordinates
+
+                else
+                    Nothing
+            )
+        >> List.head
+        >> Maybe.withDefault ( 0, 0 )
+
+
+{-| 迷路の行き止まりに到る分枝を作る。
+TODO 実装せよ
+-}
+makeBranch : Chooser -> String -> Path -> Path -> Maze -> Maze
+makeBranch chooser novel startPath endPath maze =
+    let
+        start =
+            getStart maze
+    in
+    maze
 
 
 
