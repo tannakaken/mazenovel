@@ -7146,6 +7146,13 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
+var $author$project$Maze$Cell = F2(
+	function (_char, kind) {
+		return {_char: _char, kind: kind};
+	});
+var $author$project$Maze$Fork = function (a) {
+	return {$: 'Fork', a: a};
+};
 var $author$project$Maze$empty = $elm$core$Dict$empty;
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
@@ -7172,13 +7179,13 @@ var $author$project$Maze$headChar = A2(
 		$elm$core$List$head,
 		$elm$core$Maybe$withDefault(
 			_Utils_chr('\u3000'))));
+var $author$project$Maze$insert = F3(
+	function (coordinates, c, maze) {
+		return A3($elm$core$Dict$insert, coordinates, c, maze);
+	});
 var $author$project$Maze$BackTrack = function (a) {
 	return {$: 'BackTrack', a: a};
 };
-var $author$project$Maze$Cell = F2(
-	function (_char, kind) {
-		return {_char: _char, kind: kind};
-	});
 var $author$project$Maze$MazeResult = function (a) {
 	return {$: 'MazeResult', a: a};
 };
@@ -7346,10 +7353,6 @@ var $author$project$Maze$chooseNextCoordinates = F4(
 			chooser,
 			A3($author$project$Maze$choiceOfNextCoordinates, maze, exceptions, currentCoordinates));
 	});
-var $author$project$Maze$insert = F3(
-	function (coordinates, c, maze) {
-		return A3($elm$core$Dict$insert, coordinates, c, maze);
-	});
 var $author$project$Maze$makeExitAux = F6(
 	function (chooser, currentChar, currentRest, maze, exceptions, currentCoordinates) {
 		makeExitAux:
@@ -7420,15 +7423,17 @@ var $author$project$Maze$next = function (chooser) {
 		return chooser;
 	}
 };
-var $author$project$Maze$makeExit = F2(
-	function (chooser, novel) {
+var $elm$core$String$reverse = _String_reverse;
+var $author$project$Maze$makeExit = F3(
+	function (chooser, novel, path) {
 		makeExit:
 		while (true) {
 			if ($elm$core$String$isEmpty(novel)) {
 				return $author$project$Maze$empty;
 			} else {
-				var rest = A2($elm$core$String$dropLeft, 1, novel);
-				var c = $author$project$Maze$headChar(novel);
+				var revNovel = $elm$core$String$reverse(novel);
+				var rest = A2($elm$core$String$dropLeft, 1, revNovel);
+				var c = $author$project$Maze$headChar(revNovel);
 				var _v0 = A6(
 					$author$project$Maze$makeExitAux,
 					chooser,
@@ -7439,13 +7444,25 @@ var $author$project$Maze$makeExit = F2(
 					_Utils_Tuple2(0, 0));
 				if (_v0.$ === 'MazeResult') {
 					var maze = _v0.a;
-					return maze;
+					return A3(
+						$author$project$Maze$insert,
+						_Utils_Tuple2(0, 0),
+						A2(
+							$author$project$Maze$Cell,
+							A2(
+								$author$project$Maze$getChar,
+								_Utils_Tuple2(0, 0),
+								maze),
+							$author$project$Maze$Fork(path)),
+						maze);
 				} else {
 					var nextChooser = $author$project$Maze$next(chooser);
 					var $temp$chooser = nextChooser,
-						$temp$novel = novel;
+						$temp$novel = novel,
+						$temp$path = path;
 					chooser = $temp$chooser;
 					novel = $temp$novel;
+					path = $temp$path;
 					continue makeExit;
 				}
 			}
@@ -7579,7 +7596,6 @@ var $author$project$Maze$randomChooser = function (seed) {
 	};
 	return $author$project$Maze$Chooser(chooser);
 };
-var $elm$core$String$reverse = _String_reverse;
 var $author$project$Path$toString = function (path) {
 	return A2(
 		$elm$core$String$join,
@@ -7592,10 +7608,7 @@ var $author$project$Main$novelToMaze = F2(
 		var novelPath = _v0.b;
 		var pathString = $author$project$Path$toString(novelPath);
 		var chooser = $author$project$Maze$randomChooser(random);
-		var maze = A2(
-			$author$project$Maze$makeExit,
-			chooser,
-			$elm$core$String$reverse(novel));
+		var maze = A3($author$project$Maze$makeExit, chooser, novel, novelPath);
 		return _Utils_Tuple2(maze, pathString);
 	});
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
