@@ -238,7 +238,7 @@ novelToMaze random ( novel, novelPath ) =
             Maze.randomChooser random
 
         maze =
-            Maze.makeExit chooser novel
+            Maze.makeExit chooser novel novelPath
 
         pathString =
             Path.toString novelPath
@@ -320,7 +320,7 @@ mazeCoordinates coordinates maze =
         Maze.Start ->
             span [ class "start" ] [ charToText char ]
 
-        Maze.Fork ->
+        Maze.Fork _ ->
             span [ class "fork" ] [ charToText char ]
 
 

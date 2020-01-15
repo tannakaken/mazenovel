@@ -58,7 +58,7 @@ import Dict exposing (Dict)
 import Random
 import Set exposing (Set)
 import Util exposing (getNth)
-
+import Path exposing (Path)
 
 
 -- MAZE
@@ -76,7 +76,7 @@ type Kind
     = Wall
     | Space
     | Start
-    | Fork
+    | Fork Path
 
 
 {-| `Maze`の一つ一つの区画の内容を表す。。
@@ -87,7 +87,7 @@ type alias Cell =
     }
 
 
-{-| `Coordinates`に文字を対応させて、道に文字列が並んだ小説迷路を表す。
+{-| `Coordinates`に`Cell`を対応させて、道に文字列が並んだ小説迷路を表す。
 例えば小説迷路
 
     　出
@@ -206,9 +206,9 @@ getArea maze =
 
 {-| 迷路が完成した場合と、後戻りが必要な場合を分ける。
 -}
-type MazeResult {- 完成した迷路 -}
-    = MazeResult Maze {- 後戻りする数 -}
-    | BackTrack Int
+type MazeResult
+    = MazeResult Maze -- 完成した迷路
+    | BackTrack Int -- 後戻りする数
 
 
 {-| 文字列の最初の文字を返す。
@@ -235,8 +235,8 @@ headChar =
 ここで`'お'`の場所が`Start`である。
 
 -}
-makeExit : Chooser -> String -> Maze
-makeExit chooser novel =
+makeExit : Chooser -> String -> Path ->  Maze
+makeExit chooser novel path =
     if String.isEmpty novel then
         empty
 
@@ -254,7 +254,7 @@ makeExit chooser novel =
         case makeExitAux chooser c rest empty Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}
             MazeResult maze ->
-                maze
+                insert (0,0) (Cell (getChar (0,0) maze) (Fork path)) maze 
 
             {- バックトラックで最初まで戻ってしまった時は、別の乱数を使う。 -}
             BackTrack _ ->
@@ -262,7 +262,7 @@ makeExit chooser novel =
                     nextChooser =
                         next chooser
                 in
-                makeExit nextChooser novel
+                makeExit nextChooser novel path
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
