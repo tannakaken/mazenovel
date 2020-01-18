@@ -112,6 +112,9 @@ type alias Cell =
 
 によって作れる。
 
+ただし原点がどこで、x軸y軸の正負の方向は未定義であるので、
+表示の際にどの方向に表示しても良い。
+
 -}
 type alias Maze =
     Dict Coordinates Cell
@@ -164,12 +167,13 @@ getKind coordinates maze =
 
 
 {-| 迷路の範囲を表す型。
+限界がないことをNothingで表す。
 -}
 type alias Area =
-    { top : Int
-    , right : Int
-    , bottom : Int
-    , left : Int
+    { top : Maybe Int
+    , right : Maybe Int
+    , bottom : Maybe Int
+    , left : Maybe Int
     }
 
 
@@ -191,10 +195,10 @@ type alias Area =
                 |> insert ( 0, 2 ) (Cell 'で' Space)
     in
     Maze.getArea maze
-        == { top = 2
-           , right = 2
-           , bottom = 0
-           , left = 0
+        == { top = Just 2
+           , right = Just 2
+           , bottom = Just 0
+           , left = Just 0
            }
 
 となる。
@@ -203,8 +207,14 @@ type alias Area =
 getArea : Maze -> Area
 getArea maze =
     Dict.keys maze
-        |> List.foldl (\( x, y ) { top, right, bottom, left } -> Area (max y top) (max x right) (min y bottom) (min x left))
-            (Area 0 0 0 0)
+        |> List.foldl
+            (\( x, y ) { top, right, bottom, left } ->
+                Area (Just (max y (Maybe.withDefault 0 top)))
+                    (Just (max x (Maybe.withDefault 0 right)))
+                    (Just (min y (Maybe.withDefault 0 bottom)))
+                    (Just (min x (Maybe.withDefault 0 left)))
+            )
+            (Area Nothing Nothing Nothing Nothing)
 
 
 

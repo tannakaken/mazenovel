@@ -335,12 +335,12 @@ seedLink model =
 
 mazeRows : Area -> Maze -> List (Html msg)
 mazeRows area maze =
-    mazeRowsAux area maze area.top []
+    mazeRowsAux area maze (Maybe.withDefault 0 area.top) []
 
 
 mazeRowsAux : Area -> Maze -> Int -> List (Html msg) -> List (Html msg)
 mazeRowsAux area maze row acc =
-    if row < area.bottom then
+    if row < Maybe.withDefault 0 area.bottom then
         acc
 
     else
@@ -349,12 +349,12 @@ mazeRowsAux area maze row acc =
 
 mazeColumns : Area -> Maze -> Int -> List (Html msg)
 mazeColumns area maze row =
-    mazeColumnsAux area maze row area.left []
+    mazeColumnsAux area maze row (Maybe.withDefault 0 area.left) []
 
 
 mazeColumnsAux : Area -> Maze -> Int -> Int -> List (Html msg) -> List (Html msg)
 mazeColumnsAux area maze row column acc =
-    if column > area.right then
+    if column > Maybe.withDefault 0 area.right then
         acc
 
     else
