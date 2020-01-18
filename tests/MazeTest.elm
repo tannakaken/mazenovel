@@ -37,6 +37,7 @@ sampleMaze coordinatess =
         head :: rest ->
             Dict.insert head (Maze.Cell 'a' Maze.Space) <| sampleMaze rest
 
+
 defaultArea : Maze.Area
 defaultArea =
     { top = Nothing
@@ -44,6 +45,7 @@ defaultArea =
     , bottom = Just 0
     , left = Nothing
     }
+
 
 suite : Test
 suite =
