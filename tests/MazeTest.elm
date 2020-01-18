@@ -37,6 +37,13 @@ sampleMaze coordinatess =
         head :: rest ->
             Dict.insert head (Maze.Cell 'a' Maze.Space) <| sampleMaze rest
 
+defaultArea : Maze.Area
+defaultArea =
+    { top = Nothing
+    , right = Nothing
+    , bottom = Just 0
+    , left = Nothing
+    }
 
 suite : Test
 suite =
@@ -45,12 +52,12 @@ suite =
             [ test "make one coordinates path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.makeExit testChooser "h" [])
+                        (Maze.makeExit testChooser defaultArea "h" [])
                         (Dict.fromList [ ( ( 0, 0 ), Maze.Cell 'h' (Maze.Fork []) ) ])
             , test "make two coordinates path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.makeExit testChooser "he" [ 0, 0 ])
+                        (Maze.makeExit testChooser defaultArea "he" [ 0, 0 ])
                         (Dict.fromList
                             [ ( ( 0, 0 ), Maze.Cell 'e' (Maze.Fork [ 0, 0 ]) )
                             , ( ( -1, 0 ), Maze.Cell 'h' Maze.Start )
@@ -59,7 +66,7 @@ suite =
             , test "make three coordinates path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.makeExit testChooser "hel" [ 1 ])
+                        (Maze.makeExit testChooser defaultArea "hel" [ 1 ])
                         (Dict.fromList
                             [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 1 ]) )
                             , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
@@ -71,26 +78,26 @@ suite =
             [ test "choice of next coordinates" <|
                 \_ ->
                     Expect.equal
-                        (Maze.choiceOfNextCoordinates (sampleMaze [ ( 0, 0 ) ]) Set.empty ( 0, 0 ))
+                        (Maze.choiceOfNextCoordinates (sampleMaze [ ( 0, 0 ) ]) defaultArea Set.empty ( 0, 0 ))
                         (Set.fromList [ ( 1, 0 ), ( -1, 0 ), ( 0, 1 ) ])
             , test "exceptions of next coordinates" <|
                 \_ ->
                     Expect.equal
-                        (Maze.choiceOfNextCoordinates (sampleMaze [ ( 0, 0 ) ]) (Set.fromList [ ( 0, 1 ) ]) ( 0, 0 ))
+                        (Maze.choiceOfNextCoordinates (sampleMaze [ ( 0, 0 ) ]) defaultArea (Set.fromList [ ( 0, 1 ) ]) ( 0, 0 ))
                         (Set.fromList [ ( 1, 0 ), ( -1, 0 ) ])
             ]
         , describe "Maze.canDig"
             [ test "can dig coordinates if it make new path and does not make new intersection" <|
                 \_ ->
-                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 0, 0 ) ( 0, 1 ) |> Expect.true "expected that can dig"
+                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) defaultArea ( 0, 0 ) ( 0, 1 ) |> Expect.true "expected that can dig"
             , test "can not dig coordinates out of area" <|
                 \_ ->
-                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 0, 0 ) ( 0, -1 ) |> Expect.false "expected that can not dig"
+                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) defaultArea ( 0, 0 ) ( 0, -1 ) |> Expect.false "expected that can not dig"
             , test "can not dig coordinates in maze path" <|
                 \_ ->
-                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) ( 1, 0 ) ( 0, 0 ) |> Expect.false "expected that can not dig"
+                    Maze.canDig (sampleMaze [ ( 0, 0 ) ]) defaultArea ( 1, 0 ) ( 0, 0 ) |> Expect.false "expected that can not dig"
             , test "can not dig coordinates adjacent to maze path" <|
                 \_ ->
-                    Maze.canDig (sampleMaze [ ( 0, 0 ), ( 0, 1 ), ( 1, 1 ) ]) ( 1, 1 ) ( 1, 0 ) |> Expect.false "expected that can not dig"
+                    Maze.canDig (sampleMaze [ ( 0, 0 ), ( 0, 1 ), ( 1, 1 ) ]) defaultArea ( 1, 1 ) ( 1, 0 ) |> Expect.false "expected that can not dig"
             ]
         ]

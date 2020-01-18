@@ -614,7 +614,7 @@ type alias Triple =
 -}
 inArea : Area -> Coordinates -> Bool
 inArea area coordinates =
-    [ Triple .top Tuple.second (>), Triple .right Tuple.first (>), Triple .bottom Tuple.second (<), Triple .left Tuple.first (<) ]
+    [ Triple .top Tuple.second (<=), Triple .right Tuple.first (<=), Triple .bottom Tuple.second (>=), Triple .left Tuple.first (>=) ]
         |> List.all (\{ direction, which, comparison } -> direction area |> Maybe.map (comparison (which coordinates)) |> Maybe.withDefault True)
 
 
