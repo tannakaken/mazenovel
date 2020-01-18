@@ -6961,12 +6961,28 @@ var $author$project$Maze$getArea = function (maze) {
 				var left = _v1.left;
 				return A4(
 					$author$project$Maze$Area,
-					A2($elm$core$Basics$max, y, top),
-					A2($elm$core$Basics$max, x, right),
-					A2($elm$core$Basics$min, y, bottom),
-					A2($elm$core$Basics$min, x, left));
+					$elm$core$Maybe$Just(
+						A2(
+							$elm$core$Basics$max,
+							y,
+							A2($elm$core$Maybe$withDefault, 0, top))),
+					$elm$core$Maybe$Just(
+						A2(
+							$elm$core$Basics$max,
+							x,
+							A2($elm$core$Maybe$withDefault, 0, right))),
+					$elm$core$Maybe$Just(
+						A2(
+							$elm$core$Basics$min,
+							y,
+							A2($elm$core$Maybe$withDefault, 0, bottom))),
+					$elm$core$Maybe$Just(
+						A2(
+							$elm$core$Basics$min,
+							x,
+							A2($elm$core$Maybe$withDefault, 0, left))));
 			}),
-		A4($author$project$Maze$Area, 0, 0, 0, 0),
+		A4($author$project$Maze$Area, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing),
 		$elm$core$Dict$keys(maze));
 };
 var $elm$core$String$cons = _String_cons;
@@ -7067,7 +7083,9 @@ var $author$project$Main$mazeColumnsAux = F5(
 	function (area, maze, row, column, acc) {
 		mazeColumnsAux:
 		while (true) {
-			if (_Utils_cmp(column, area.right) > 0) {
+			if (_Utils_cmp(
+				column,
+				A2($elm$core$Maybe$withDefault, 0, area.right)) > 0) {
 				return acc;
 			} else {
 				var $temp$area = area,
@@ -7094,13 +7112,21 @@ var $author$project$Main$mazeColumnsAux = F5(
 	});
 var $author$project$Main$mazeColumns = F3(
 	function (area, maze, row) {
-		return A5($author$project$Main$mazeColumnsAux, area, maze, row, area.left, _List_Nil);
+		return A5(
+			$author$project$Main$mazeColumnsAux,
+			area,
+			maze,
+			row,
+			A2($elm$core$Maybe$withDefault, 0, area.left),
+			_List_Nil);
 	});
 var $author$project$Main$mazeRowsAux = F4(
 	function (area, maze, row, acc) {
 		mazeRowsAux:
 		while (true) {
-			if (_Utils_cmp(row, area.bottom) < 0) {
+			if (_Utils_cmp(
+				row,
+				A2($elm$core$Maybe$withDefault, 0, area.bottom)) < 0) {
 				return acc;
 			} else {
 				var $temp$area = area,
@@ -7125,7 +7151,12 @@ var $author$project$Main$mazeRowsAux = F4(
 	});
 var $author$project$Main$mazeRows = F2(
 	function (area, maze) {
-		return A4($author$project$Main$mazeRowsAux, area, maze, area.top, _List_Nil);
+		return A4(
+			$author$project$Main$mazeRowsAux,
+			area,
+			maze,
+			A2($elm$core$Maybe$withDefault, 0, area.top),
+			_List_Nil);
 	});
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -7146,18 +7177,13 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
-var $author$project$Maze$Cell = F2(
-	function (_char, kind) {
-		return {_char: _char, kind: kind};
-	});
-var $author$project$Maze$Fork = function (a) {
-	return {$: 'Fork', a: a};
+var $author$project$Main$defaultArea = {
+	bottom: $elm$core$Maybe$Just(0),
+	left: $elm$core$Maybe$Nothing,
+	right: $elm$core$Maybe$Nothing,
+	top: $elm$core$Maybe$Nothing
 };
-var $author$project$Maze$empty = $elm$core$Dict$empty;
-var $elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $author$project$Maze$Start = {$: 'Start'};
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -7167,30 +7193,32 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $author$project$Maze$headChar = A2(
+var $author$project$Maze$getStart = A2(
 	$elm$core$Basics$composeR,
-	$elm$core$String$toList,
+	$elm$core$Dict$toList,
 	A2(
 		$elm$core$Basics$composeR,
-		$elm$core$List$head,
-		$elm$core$Maybe$withDefault(
-			_Utils_chr('\u3000'))));
-var $author$project$Maze$insert = F3(
-	function (coordinates, c, maze) {
-		return A3($elm$core$Dict$insert, coordinates, c, maze);
+		$elm$core$List$filterMap(
+			function (_v0) {
+				var coordinates = _v0.a;
+				var kind = _v0.b.kind;
+				return _Utils_eq(kind, $author$project$Maze$Start) ? $elm$core$Maybe$Just(coordinates) : $elm$core$Maybe$Nothing;
+			}),
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$head,
+			$elm$core$Maybe$withDefault(
+				_Utils_Tuple2(0, 0)))));
+var $author$project$Maze$Cell = F2(
+	function (_char, kind) {
+		return {_char: _char, kind: kind};
 	});
-var $author$project$Maze$BackTrack = function (a) {
-	return {$: 'BackTrack', a: a};
+var $author$project$Maze$Fork = function (a) {
+	return {$: 'Fork', a: a};
 };
-var $author$project$Maze$MazeResult = function (a) {
-	return {$: 'MazeResult', a: a};
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
 };
-var $author$project$Maze$Space = {$: 'Space'};
-var $author$project$Maze$Start = {$: 'Start'};
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -7239,6 +7267,76 @@ var $elm$core$Set$filter = F2(
 					}),
 				dict));
 	});
+var $elm$core$Set$remove = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$remove, key, dict));
+	});
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
+var $author$project$Maze$vonNeumannNeighborhood = function (coordinates) {
+	var _v0 = coordinates;
+	var x = _v0.a;
+	var y = _v0.b;
+	return $elm$core$Set$fromList(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(x + 1, y),
+				_Utils_Tuple2(x - 1, y),
+				_Utils_Tuple2(x, y + 1),
+				_Utils_Tuple2(x, y - 1)
+			]));
+};
+var $author$project$Maze$followExistingRoad = F3(
+	function (maze, nextChar, previousCoordinates) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Maze$vonNeumannNeighborhood,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Set$remove(previousCoordinates),
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$Set$filter(
+						function (coordinatess) {
+							return _Utils_eq(
+								A2($author$project$Maze$getChar, coordinatess, maze),
+								nextChar);
+						}),
+					A2($elm$core$Basics$composeR, $elm$core$Set$toList, $elm$core$List$head))));
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Maze$headChar = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$String$toList,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$head,
+		$elm$core$Maybe$withDefault(
+			_Utils_chr('\u3000'))));
+var $author$project$Maze$insert = F3(
+	function (coordinates, c, maze) {
+		return A3($elm$core$Dict$insert, coordinates, c, maze);
+	});
+var $author$project$Maze$BackTrack = function (a) {
+	return {$: 'BackTrack', a: a};
+};
+var $author$project$Maze$MazeResult = function (a) {
+	return {$: 'MazeResult', a: a};
+};
+var $author$project$Maze$Space = {$: 'Space'};
 var $elm$core$Dict$isEmpty = function (dict) {
 	if (dict.$ === 'RBEmpty_elm_builtin') {
 		return true;
@@ -7263,34 +7361,6 @@ var $author$project$Maze$onExistingPath = F2(
 	function (maze, coordinates) {
 		return A2($elm$core$Dict$member, coordinates, maze);
 	});
-var $elm$core$Set$remove = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A2($elm$core$Dict$remove, key, dict));
-	});
-var $elm$core$Set$insert = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return $elm$core$Set$Set_elm_builtin(
-			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Set$fromList = function (list) {
-	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
-};
-var $author$project$Maze$vonNeumannNeighborhood = function (coordinates) {
-	var _v0 = coordinates;
-	var x = _v0.a;
-	var y = _v0.b;
-	return $elm$core$Set$fromList(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(x + 1, y),
-				_Utils_Tuple2(x - 1, y),
-				_Utils_Tuple2(x, y + 1),
-				_Utils_Tuple2(x, y - 1)
-			]));
-};
 var $author$project$Maze$doesBecomeSinglePath = F3(
 	function (maze, previousCoordinates, coordinates) {
 		var neighborhood = $author$project$Maze$vonNeumannNeighborhood(coordinates);
@@ -7301,15 +7371,100 @@ var $author$project$Maze$doesBecomeSinglePath = F3(
 				$author$project$Maze$onExistingPath(maze),
 				neighborhoodWithoutPrevious));
 	});
+var $author$project$Maze$Triple = F3(
+	function (direction, which, comparison) {
+		return {comparison: comparison, direction: direction, which: which};
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
 var $elm$core$Basics$ge = _Utils_ge;
-var $author$project$Maze$inArea = function (_v0) {
-	var x = _v0.a;
+var $elm$core$Tuple$second = function (_v0) {
 	var y = _v0.b;
-	return y >= 0;
+	return y;
 };
-var $author$project$Maze$canDig = F3(
-	function (maze, previousCoordinates, coordinates) {
-		return $author$project$Maze$inArea(coordinates) && ((!A2($author$project$Maze$onExistingPath, maze, coordinates)) && A3($author$project$Maze$doesBecomeSinglePath, maze, previousCoordinates, coordinates));
+var $author$project$Maze$inArea = F2(
+	function (area, coordinates) {
+		return A2(
+			$elm$core$List$all,
+			function (_v0) {
+				var direction = _v0.direction;
+				var which = _v0.which;
+				var comparison = _v0.comparison;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						comparison(
+							which(coordinates)),
+						direction(area)));
+			},
+			_List_fromArray(
+				[
+					A3(
+					$author$project$Maze$Triple,
+					function ($) {
+						return $.top;
+					},
+					$elm$core$Tuple$second,
+					$elm$core$Basics$le),
+					A3(
+					$author$project$Maze$Triple,
+					function ($) {
+						return $.right;
+					},
+					$elm$core$Tuple$first,
+					$elm$core$Basics$le),
+					A3(
+					$author$project$Maze$Triple,
+					function ($) {
+						return $.bottom;
+					},
+					$elm$core$Tuple$second,
+					$elm$core$Basics$ge),
+					A3(
+					$author$project$Maze$Triple,
+					function ($) {
+						return $.left;
+					},
+					$elm$core$Tuple$first,
+					$elm$core$Basics$ge)
+				]));
+	});
+var $author$project$Maze$canDig = F4(
+	function (maze, area, previousCoordinates, coordinates) {
+		return A2($author$project$Maze$inArea, area, coordinates) && ((!A2($author$project$Maze$onExistingPath, maze, coordinates)) && A3($author$project$Maze$doesBecomeSinglePath, maze, previousCoordinates, coordinates));
 	});
 var $elm$core$Dict$diff = F2(
 	function (t1, t2) {
@@ -7329,13 +7484,13 @@ var $elm$core$Set$diff = F2(
 		return $elm$core$Set$Set_elm_builtin(
 			A2($elm$core$Dict$diff, dict1, dict2));
 	});
-var $author$project$Maze$choiceOfNextCoordinates = F3(
-	function (maze, exceptions, currentCoordinates) {
+var $author$project$Maze$choiceOfNextCoordinates = F4(
+	function (maze, area, exceptions, currentCoordinates) {
 		return function (set) {
 			return A2(
 				$elm$core$Set$filter,
 				function (coordinates) {
-					return A3($author$project$Maze$canDig, maze, currentCoordinates, coordinates);
+					return A4($author$project$Maze$canDig, maze, area, currentCoordinates, coordinates);
 				},
 				A2($elm$core$Set$diff, set, exceptions));
 		}(
@@ -7346,28 +7501,31 @@ var $author$project$Maze$choose = F2(
 		var chooser = _v0.a;
 		return chooser(coordinatess);
 	});
-var $author$project$Maze$chooseNextCoordinates = F4(
-	function (chooser, maze, exceptions, currentCoordinates) {
+var $author$project$Maze$chooseNextCoordinates = F5(
+	function (chooser, maze, area, exceptions, currentCoordinates) {
 		return A2(
 			$author$project$Maze$choose,
 			chooser,
-			A3($author$project$Maze$choiceOfNextCoordinates, maze, exceptions, currentCoordinates));
+			A4($author$project$Maze$choiceOfNextCoordinates, maze, area, exceptions, currentCoordinates));
 	});
-var $author$project$Maze$makeExitAux = F6(
-	function (chooser, currentChar, currentRest, maze, exceptions, currentCoordinates) {
-		makeExitAux:
+var $author$project$Maze$makeBranchAux = F8(
+	function (chooser, area, currentChar, currentRest, endPath, maze, exceptions, currentCoordinates) {
+		makeBranchAux:
 		while (true) {
 			if (!$elm$core$String$length(currentRest)) {
-				return $author$project$Maze$MazeResult(
-					A3(
-						$author$project$Maze$insert,
-						currentCoordinates,
-						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Start),
-						maze));
+				return $author$project$Maze$BackTrack(0);
 			} else {
-				var maybeNextCoordinates = A4($author$project$Maze$chooseNextCoordinates, chooser, maze, exceptions, currentCoordinates);
+				var maybeNextCoordinates = A5($author$project$Maze$chooseNextCoordinates, chooser, maze, area, exceptions, currentCoordinates);
 				if (maybeNextCoordinates.$ === 'Nothing') {
-					return $author$project$Maze$BackTrack(10);
+					return $author$project$Maze$MazeResult(
+						A3(
+							$author$project$Maze$insert,
+							currentCoordinates,
+							A2(
+								$author$project$Maze$Cell,
+								currentChar,
+								$author$project$Maze$Fork(endPath)),
+							maze));
 				} else {
 					var _v1 = maybeNextCoordinates.a;
 					var nextCoordinates = _v1.a;
@@ -7379,26 +7537,25 @@ var $author$project$Maze$makeExitAux = F6(
 						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Space),
 						maze);
 					var c = $author$project$Maze$headChar(currentRest);
-					var result = A6($author$project$Maze$makeExitAux, nextChooser, c, rest, nextMaze, $elm$core$Set$empty, nextCoordinates);
+					var result = A8($author$project$Maze$makeBranchAux, nextChooser, area, c, rest, endPath, nextMaze, $elm$core$Set$empty, nextCoordinates);
 					if (result.$ === 'BackTrack') {
-						var n = result.a;
-						if (!n) {
-							var $temp$chooser = chooser,
-								$temp$currentChar = currentChar,
-								$temp$currentRest = currentRest,
-								$temp$maze = maze,
-								$temp$exceptions = A2($elm$core$Set$insert, nextCoordinates, exceptions),
-								$temp$currentCoordinates = currentCoordinates;
-							chooser = $temp$chooser;
-							currentChar = $temp$currentChar;
-							currentRest = $temp$currentRest;
-							maze = $temp$maze;
-							exceptions = $temp$exceptions;
-							currentCoordinates = $temp$currentCoordinates;
-							continue makeExitAux;
-						} else {
-							return $author$project$Maze$BackTrack(n - 1);
-						}
+						var $temp$chooser = chooser,
+							$temp$area = area,
+							$temp$currentChar = currentChar,
+							$temp$currentRest = currentRest,
+							$temp$endPath = endPath,
+							$temp$maze = maze,
+							$temp$exceptions = A2($elm$core$Set$insert, nextCoordinates, exceptions),
+							$temp$currentCoordinates = currentCoordinates;
+						chooser = $temp$chooser;
+						area = $temp$area;
+						currentChar = $temp$currentChar;
+						currentRest = $temp$currentRest;
+						endPath = $temp$endPath;
+						maze = $temp$maze;
+						exceptions = $temp$exceptions;
+						currentCoordinates = $temp$currentCoordinates;
+						continue makeBranchAux;
 					} else {
 						return result;
 					}
@@ -7423,54 +7580,83 @@ var $author$project$Maze$next = function (chooser) {
 		return chooser;
 	}
 };
-var $elm$core$String$reverse = _String_reverse;
-var $author$project$Maze$makeExit = F3(
-	function (chooser, novel, path) {
-		makeExit:
+var $author$project$Maze$makeBranch = F7(
+	function (chooser, area, currentChar, currentRest, endPath, maze, currentCoordinates) {
+		makeBranch:
 		while (true) {
-			if ($elm$core$String$isEmpty(novel)) {
-				return $author$project$Maze$empty;
+			var _v0 = A8($author$project$Maze$makeBranchAux, chooser, area, currentChar, currentRest, endPath, maze, $elm$core$Set$empty, currentCoordinates);
+			if (_v0.$ === 'MazeResult') {
+				var resultMaze = _v0.a;
+				return resultMaze;
 			} else {
-				var revNovel = $elm$core$String$reverse(novel);
-				var rest = A2($elm$core$String$dropLeft, 1, revNovel);
-				var c = $author$project$Maze$headChar(revNovel);
-				var _v0 = A6(
-					$author$project$Maze$makeExitAux,
-					chooser,
-					c,
-					rest,
-					$author$project$Maze$empty,
-					$elm$core$Set$empty,
-					_Utils_Tuple2(0, 0));
-				if (_v0.$ === 'MazeResult') {
-					var maze = _v0.a;
-					return A3(
+				var nextChooser = $author$project$Maze$next(chooser);
+				var $temp$chooser = nextChooser,
+					$temp$area = area,
+					$temp$currentChar = currentChar,
+					$temp$currentRest = currentRest,
+					$temp$endPath = endPath,
+					$temp$maze = maze,
+					$temp$currentCoordinates = currentCoordinates;
+				chooser = $temp$chooser;
+				area = $temp$area;
+				currentChar = $temp$currentChar;
+				currentRest = $temp$currentRest;
+				endPath = $temp$endPath;
+				maze = $temp$maze;
+				currentCoordinates = $temp$currentCoordinates;
+				continue makeBranch;
+			}
+		}
+	});
+var $author$project$Maze$gotoFork = F8(
+	function (chooser, area, currentRest, startPath, endPath, previousCoordinates, currentCoordinates, maze) {
+		gotoFork:
+		while (true) {
+			if (!$elm$core$String$length(currentRest)) {
+				return maze;
+			} else {
+				var nextRest = A2($elm$core$String$dropLeft, 1, currentRest);
+				var nextChar = $author$project$Maze$headChar(currentRest);
+				var _v0 = A4($author$project$Maze$followExistingRoad, maze, nextChar, previousCoordinates, currentCoordinates);
+				if (_v0.$ === 'Nothing') {
+					var forkChar = A2($author$project$Maze$getChar, currentCoordinates, maze);
+					var newMaze = A3(
 						$author$project$Maze$insert,
-						_Utils_Tuple2(0, 0),
+						currentCoordinates,
 						A2(
 							$author$project$Maze$Cell,
-							A2(
-								$author$project$Maze$getChar,
-								_Utils_Tuple2(0, 0),
-								maze),
-							$author$project$Maze$Fork(path)),
+							forkChar,
+							$author$project$Maze$Fork(startPath)),
 						maze);
+					return A7($author$project$Maze$makeBranch, chooser, area, nextChar, nextRest, endPath, newMaze, currentCoordinates);
 				} else {
-					var nextChooser = $author$project$Maze$next(chooser);
-					var $temp$chooser = nextChooser,
-						$temp$novel = novel,
-						$temp$path = path;
+					var nextCoordinates = _v0.a;
+					var $temp$chooser = chooser,
+						$temp$area = area,
+						$temp$currentRest = nextRest,
+						$temp$startPath = startPath,
+						$temp$endPath = endPath,
+						$temp$previousCoordinates = currentCoordinates,
+						$temp$currentCoordinates = nextCoordinates,
+						$temp$maze = maze;
 					chooser = $temp$chooser;
-					novel = $temp$novel;
-					path = $temp$path;
-					continue makeExit;
+					area = $temp$area;
+					currentRest = $temp$currentRest;
+					startPath = $temp$startPath;
+					endPath = $temp$endPath;
+					previousCoordinates = $temp$previousCoordinates;
+					currentCoordinates = $temp$currentCoordinates;
+					maze = $temp$maze;
+					continue gotoFork;
 				}
 			}
 		}
 	});
-var $author$project$Maze$Chooser = function (a) {
-	return {$: 'Chooser', a: a};
-};
+var $author$project$Maze$addBranch = F6(
+	function (chooser, area, novel, startPath, endPath, maze) {
+		var start = $author$project$Maze$getStart(maze);
+		return A8($author$project$Maze$gotoFork, chooser, area, novel, startPath, endPath, start, start, maze);
+	});
 var $elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -7492,6 +7678,156 @@ var $elm$core$List$drop = F2(
 			}
 		}
 	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$Path$throughList = function (path) {
+	return A2(
+		$elm$core$List$map,
+		function (f) {
+			return f(path);
+		},
+		A2(
+			$elm$core$List$map,
+			$elm$core$List$take,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(path) - 1)));
+};
+var $author$project$Path$betweenForks = function (startPath) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Path$throughList,
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$drop(
+				$elm$core$List$length(startPath)),
+			$elm$core$Set$fromList));
+};
 var $author$project$Util$getNth = F2(
 	function (nth, list) {
 		return $elm$core$List$head(
@@ -7571,6 +7907,25 @@ var $elm$random$Random$step = F2(
 		var generator = _v0.a;
 		return generator(seed);
 	});
+var $author$project$Main$choosePathFromForks = F2(
+	function (random, forks) {
+		var size = $elm$core$Set$size(forks);
+		var generator = A2($elm$random$Random$int, 0, size - 1);
+		var _v0 = A2($elm$random$Random$step, generator, random);
+		var index = _v0.a;
+		var nextRandom = _v0.b;
+		var path = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$author$project$Util$getNth,
+				index,
+				$elm$core$Set$toList(forks)));
+		return _Utils_Tuple2(path, nextRandom);
+	});
+var $author$project$Maze$Chooser = function (a) {
+	return {$: 'Chooser', a: a};
+};
 var $author$project$Maze$randomChooser = function (seed) {
 	var chooser = function (set) {
 		var list = $elm$core$Set$toList(set);
@@ -7596,21 +7951,6 @@ var $author$project$Maze$randomChooser = function (seed) {
 	};
 	return $author$project$Maze$Chooser(chooser);
 };
-var $author$project$Path$toString = function (path) {
-	return A2(
-		$elm$core$String$join,
-		',',
-		A2($elm$core$List$map, $elm$core$String$fromInt, path));
-};
-var $author$project$Main$novelToMaze = F2(
-	function (random, _v0) {
-		var novel = _v0.a;
-		var novelPath = _v0.b;
-		var pathString = $author$project$Path$toString(novelPath);
-		var chooser = $author$project$Maze$randomChooser(random);
-		var maze = A3($author$project$Maze$makeExit, chooser, novel, novelPath);
-		return _Utils_Tuple2(maze, pathString);
-	});
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
 var $elm$core$Array$getHelp = F3(
@@ -7729,12 +8069,171 @@ var $author$project$Novel$select = F3(
 	function (seed, path, tree) {
 		return A4($author$project$Novel$selectAux, seed, path, tree, 0);
 	});
+var $elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
+	});
+var $elm$core$Set$union = F2(
+	function (_v0, _v1) {
+		var dict1 = _v0.a;
+		var dict2 = _v1.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$union, dict1, dict2));
+	});
+var $author$project$Main$makeAllBranch = F5(
+	function (random, novelTree, area, forks, maze) {
+		if ($elm$core$Set$isEmpty(forks)) {
+			return maze;
+		} else {
+			var _v0 = A2($author$project$Main$choosePathFromForks, random, forks);
+			var nextPath = _v0.a;
+			var nextRandom = _v0.b;
+			var chooser = $author$project$Maze$randomChooser(nextRandom);
+			var result = A3($author$project$Novel$select, nextRandom, nextPath, novelTree);
+			if (result.$ === 'Nothing') {
+				return maze;
+			} else {
+				var _v2 = result.a;
+				var nextNovel = _v2.a;
+				var completePath = _v2.b;
+				var newMaze = A6($author$project$Maze$addBranch, chooser, area, nextNovel, nextPath, completePath, maze);
+				var newForks = A2(
+					$elm$core$Set$union,
+					A2($elm$core$Set$remove, nextPath, forks),
+					A2($author$project$Path$betweenForks, nextPath, completePath));
+				return newMaze;
+			}
+		}
+	});
+var $author$project$Maze$empty = $elm$core$Dict$empty;
+var $author$project$Maze$makeExitAux = F7(
+	function (chooser, area, currentChar, currentRest, maze, exceptions, currentCoordinates) {
+		makeExitAux:
+		while (true) {
+			if (!$elm$core$String$length(currentRest)) {
+				return $author$project$Maze$MazeResult(
+					A3(
+						$author$project$Maze$insert,
+						currentCoordinates,
+						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Start),
+						maze));
+			} else {
+				var maybeNextCoordinates = A5($author$project$Maze$chooseNextCoordinates, chooser, maze, area, exceptions, currentCoordinates);
+				if (maybeNextCoordinates.$ === 'Nothing') {
+					return $author$project$Maze$BackTrack(10);
+				} else {
+					var _v1 = maybeNextCoordinates.a;
+					var nextCoordinates = _v1.a;
+					var nextChooser = _v1.b;
+					var rest = A2($elm$core$String$dropLeft, 1, currentRest);
+					var nextMaze = A3(
+						$author$project$Maze$insert,
+						currentCoordinates,
+						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Space),
+						maze);
+					var c = $author$project$Maze$headChar(currentRest);
+					var result = A7($author$project$Maze$makeExitAux, nextChooser, area, c, rest, nextMaze, $elm$core$Set$empty, nextCoordinates);
+					if (result.$ === 'BackTrack') {
+						var n = result.a;
+						if (!n) {
+							var $temp$chooser = chooser,
+								$temp$area = area,
+								$temp$currentChar = currentChar,
+								$temp$currentRest = currentRest,
+								$temp$maze = maze,
+								$temp$exceptions = A2($elm$core$Set$insert, nextCoordinates, exceptions),
+								$temp$currentCoordinates = currentCoordinates;
+							chooser = $temp$chooser;
+							area = $temp$area;
+							currentChar = $temp$currentChar;
+							currentRest = $temp$currentRest;
+							maze = $temp$maze;
+							exceptions = $temp$exceptions;
+							currentCoordinates = $temp$currentCoordinates;
+							continue makeExitAux;
+						} else {
+							return $author$project$Maze$BackTrack(n - 1);
+						}
+					} else {
+						return result;
+					}
+				}
+			}
+		}
+	});
+var $elm$core$String$reverse = _String_reverse;
+var $author$project$Maze$makeExit = F4(
+	function (chooser, area, novel, path) {
+		makeExit:
+		while (true) {
+			if ($elm$core$String$isEmpty(novel)) {
+				return $author$project$Maze$empty;
+			} else {
+				var revNovel = $elm$core$String$reverse(novel);
+				var rest = A2($elm$core$String$dropLeft, 1, revNovel);
+				var c = $author$project$Maze$headChar(revNovel);
+				var _v0 = A7(
+					$author$project$Maze$makeExitAux,
+					chooser,
+					area,
+					c,
+					rest,
+					$author$project$Maze$empty,
+					$elm$core$Set$empty,
+					_Utils_Tuple2(0, 0));
+				if (_v0.$ === 'MazeResult') {
+					var maze = _v0.a;
+					return A3(
+						$author$project$Maze$insert,
+						_Utils_Tuple2(0, 0),
+						A2(
+							$author$project$Maze$Cell,
+							A2(
+								$author$project$Maze$getChar,
+								_Utils_Tuple2(0, 0),
+								maze),
+							$author$project$Maze$Fork(path)),
+						maze);
+				} else {
+					var nextChooser = $author$project$Maze$next(chooser);
+					var $temp$chooser = nextChooser,
+						$temp$area = area,
+						$temp$novel = novel,
+						$temp$path = path;
+					chooser = $temp$chooser;
+					area = $temp$area;
+					novel = $temp$novel;
+					path = $temp$path;
+					continue makeExit;
+				}
+			}
+		}
+	});
+var $author$project$Path$toForks = A2($elm$core$Basics$composeR, $author$project$Path$throughList, $elm$core$Set$fromList);
+var $author$project$Path$toString = function (path) {
+	return A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $elm$core$String$fromInt, path));
+};
+var $author$project$Main$novelToMaze = F3(
+	function (random, novelTree, _v0) {
+		var novel = _v0.a;
+		var novelPath = _v0.b;
+		var pathString = $author$project$Path$toString(novelPath);
+		var forks = $author$project$Path$toForks(novelPath);
+		var chooser = $author$project$Maze$randomChooser(random);
+		var maze = A4($author$project$Maze$makeExit, chooser, $author$project$Main$defaultArea, novel, novelPath);
+		var area = $author$project$Maze$getArea(maze);
+		var completeMaze = A5($author$project$Main$makeAllBranch, random, novelTree, area, forks, maze);
+		return _Utils_Tuple2(completeMaze, pathString);
+	});
 var $author$project$Main$randomMaze = F2(
 	function (model, novelTree) {
 		var random = $elm$random$Random$initialSeed(model.seed);
 		return A2(
 			$elm$core$Maybe$map,
-			$author$project$Main$novelToMaze(random),
+			A2($author$project$Main$novelToMaze, random, novelTree),
 			A3($author$project$Novel$select, random, model.path, novelTree));
 	});
 var $elm$html$Html$a = _VirtualDom_node('a');
