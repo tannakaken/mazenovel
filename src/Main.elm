@@ -232,6 +232,15 @@ randomMaze model novelTree =
     Novel.select random model.path novelTree |> Maybe.map (novelToMaze random novelTree)
 
 
+defaultArea : Maze.Area
+defaultArea =
+    { top = Nothing
+    , right = Nothing
+    , bottom = Just 0
+    , left = Nothing
+    }
+
+
 novelToMaze : Random.Seed -> Novel.Tree -> ( String, Path ) -> ( Maze, String )
 novelToMaze random novelTree ( novel, novelPath ) =
     let
@@ -239,13 +248,16 @@ novelToMaze random novelTree ( novel, novelPath ) =
             Maze.randomChooser random
 
         maze =
-            Maze.makeExit chooser novel novelPath
+            Maze.makeExit chooser defaultArea novel novelPath
 
         forks =
             Path.toForks novelPath
 
+        area =
+            Maze.getArea maze
+
         completeMaze =
-            makeAllBranch random novelTree forks maze
+            makeAllBranch random novelTree area forks maze
 
         pathString =
             Path.toString novelPath
@@ -253,8 +265,8 @@ novelToMaze random novelTree ( novel, novelPath ) =
     ( completeMaze, pathString )
 
 
-makeAllBranch : Random.Seed -> Novel.Tree -> Path.Forks -> Maze -> Maze
-makeAllBranch random novelTree forks maze =
+makeAllBranch : Random.Seed -> Novel.Tree -> Maze.Area -> Path.Forks -> Maze -> Maze
+makeAllBranch random novelTree area forks maze =
     if Set.isEmpty forks then
         maze
 
@@ -279,13 +291,10 @@ makeAllBranch random novelTree forks maze =
                         Set.union (Set.remove nextPath forks) (Path.betweenForks nextPath completePath)
 
                     newMaze =
-                        Maze.addBranch chooser nextNovel nextPath completePath maze
+                        Maze.addBranch chooser area nextNovel nextPath completePath maze
                 in
+                {- makeAllBranch nextRandom novelTree area newForks newMaze -}
                 newMaze
-
-
-
--- makeAllBranch nextRandom novelTree newForks newMaze
 
 
 choosePathFromForks : Random.Seed -> Path.Forks -> ( Path, Random.Seed )

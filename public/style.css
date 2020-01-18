@@ -6,6 +6,14 @@ span.wall {
   background-color: black;
 }
 
+span.start {
+  color: red;
+}
+
+span.fork {
+  color: green;
+}
+
 div.error {
   color: red;
 }
