@@ -4,6 +4,7 @@ module Path exposing
     , toString
     , Forks
     , toForks
+    , betweenForks
     )
 
 {-| 迷路の道順を表すデータ構造に関するモジュール。
@@ -20,6 +21,7 @@ module Path exposing
 
 @docs Forks
 @docs toForks
+@docs betweenForks
 
 -}
 
@@ -84,8 +86,23 @@ type alias Forks =
 
 -}
 toForks : Path -> Forks
-toForks path =
+toForks =
+    throughList >> Set.fromList
+
+
+{-| PathとPathの間の分かれ道の集合を得る。
+
+    betweenForks [ 0 ] [ 0, 1, 2, 3 ] =
+        Set.fromList [ [ 0, 1 ] [ 0, 1, 2 ] ]
+
+-}
+betweenForks : Path -> Path -> Forks
+betweenForks startPath =
+    throughList >> List.drop (List.length startPath) >> Set.fromList
+
+
+throughList : Path -> List Path
+throughList path =
     List.range 0 (List.length path - 1)
         |> List.map List.take
         |> List.map (\f -> f path)
-        |> Set.fromList

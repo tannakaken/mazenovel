@@ -12,10 +12,11 @@ import Novel
 import Path exposing (Path)
 import Random
 import Route exposing (Query, Route(..), urlToRoute)
+import Set
 import Task
 import Time
 import Url exposing (Url)
-import Util exposing (jsonUrl, seedUrl)
+import Util exposing (getNth, jsonUrl, seedUrl)
 
 
 
@@ -228,11 +229,11 @@ randomMaze model novelTree =
         random =
             Random.initialSeed model.seed
     in
-    Novel.select random model.path novelTree |> Maybe.map (novelToMaze random)
+    Novel.select random model.path novelTree |> Maybe.map (novelToMaze random novelTree)
 
 
-novelToMaze : Random.Seed -> ( String, Path ) -> ( Maze, String )
-novelToMaze random ( novel, novelPath ) =
+novelToMaze : Random.Seed -> Novel.Tree -> ( String, Path ) -> ( Maze, String )
+novelToMaze random novelTree ( novel, novelPath ) =
     let
         chooser =
             Maze.randomChooser random
@@ -240,10 +241,66 @@ novelToMaze random ( novel, novelPath ) =
         maze =
             Maze.makeExit chooser novel novelPath
 
+        forks =
+            Path.toForks novelPath
+
+        completeMaze =
+            makeAllBranch random novelTree forks maze
+
         pathString =
             Path.toString novelPath
     in
-    ( maze, pathString )
+    ( completeMaze, pathString )
+
+
+makeAllBranch : Random.Seed -> Novel.Tree -> Path.Forks -> Maze -> Maze
+makeAllBranch random novelTree forks maze =
+    if Set.isEmpty forks then
+        maze
+
+    else
+        let
+            ( nextPath, nextRandom ) =
+                choosePathFromForks random forks
+
+            chooser =
+                Maze.randomChooser nextRandom
+
+            result =
+                Novel.select nextRandom nextPath novelTree
+        in
+        case result of
+            Nothing ->
+                maze
+
+            Just ( nextNovel, completePath ) ->
+                let
+                    newForks =
+                        Set.union (Set.remove nextPath forks) (Path.betweenForks nextPath completePath)
+
+                    newMaze =
+                        Maze.addBranch chooser nextNovel nextPath completePath maze
+                in
+                newMaze
+                -- makeAllBranch nextRandom novelTree newForks newMaze
+
+
+choosePathFromForks : Random.Seed -> Path.Forks -> ( Path, Random.Seed )
+choosePathFromForks random forks =
+    let
+        size =
+            Set.size forks
+
+        generator =
+            Random.int 0 (size - 1)
+
+        ( index, nextRandom ) =
+            Random.step generator random
+
+        path =
+            Set.toList forks |> Util.getNth index |> Maybe.withDefault []
+    in
+    ( path, nextRandom )
 
 
 randomMazeHtml : Model -> Novel.Tree -> Html msg

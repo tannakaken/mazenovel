@@ -230,7 +230,7 @@ headChar =
 これが迷路の出口への道になる
 例えば、
 
-    novelPath chooser "おはよう" [1]
+    novelPath chooser "おはよう" [ 1 ]
 
 とすることで
 
@@ -244,6 +244,7 @@ headChar =
 またゴールである`'う'`の`Cell`は、
 そこまでの道順の情報である`[1]`が格納された、
 `Fork [1]`となる。
+
 -}
 makeExit : Chooser -> String -> Path -> Maze
 makeExit chooser novel path =
@@ -358,56 +359,67 @@ addBranch chooser novel startPath endPath maze =
     in
     gotoFork chooser novel startPath endPath start start maze
 
+
 {-| 既に出来ている迷路を辿って、分かれ道（辿っている小説と迷路の小説が食い違う地点）まで進む。
 分かれ道へはそこまでの`Path`の情報を格納する。
 -}
 gotoFork : Chooser -> String -> Path -> Path -> Coordinates -> Coordinates -> Maze -> Maze
-gotoFork  chooser currentRest startPath endPath previousCoordinates currentCoordinates maze =
-    if String.length currentRest == 0 
-    then maze
-    else let
-             nextChar = headChar currentRest
-             nextRest = String.dropLeft 1 currentRest
-         in
-            case followExistingRoad maze nextChar previousCoordinates currentCoordinates of
-                {- 分かれ道まで来た -}
-                Nothing ->
-                    let
-                        forkChar = getChar currentCoordinates maze
-                        {- 分かれ道には、そこまでのPathの情報を格納する。 -}
-                        newMaze = insert currentCoordinates  (Cell forkChar (Fork startPath)) maze
-                    in
-                    makeBranch chooser nextChar nextRest endPath newMaze currentCoordinates
+gotoFork chooser currentRest startPath endPath previousCoordinates currentCoordinates maze =
+    if String.length currentRest == 0 then
+        maze
 
-                {- まだ分かれていない -}
-                Just nextCoordinates ->
-                    gotoFork chooser nextRest startPath endPath currentCoordinates nextCoordinates maze
+    else
+        let
+            nextChar =
+                headChar currentRest
 
+            nextRest =
+                String.dropLeft 1 currentRest
+        in
+        case followExistingRoad maze nextChar previousCoordinates currentCoordinates of
+            {- 分かれ道まで来た -}
+            Nothing ->
+                let
+                    forkChar =
+                        getChar currentCoordinates maze
 
-                
+                    {- 分かれ道には、そこまでのPathの情報を格納する。 -}
+                    newMaze =
+                        insert currentCoordinates (Cell forkChar (Fork startPath)) maze
+                in
+                makeBranch chooser nextChar nextRest endPath newMaze currentCoordinates
+
+            {- まだ分かれていない -}
+            Just nextCoordinates ->
+                gotoFork chooser nextRest startPath endPath currentCoordinates nextCoordinates maze
+
 
 {-| 小説に沿って既に存在している道をいく時に、次の道を求める。
 -}
-followExistingRoad : Maze -> Char -> Coordinates -> Coordinates -> Maybe Coordinates 
-followExistingRoad maze nextChar previousCoordinates  =
+followExistingRoad : Maze -> Char -> Coordinates -> Coordinates -> Maybe Coordinates
+followExistingRoad maze nextChar previousCoordinates =
     vonNeumannNeighborhood
-      >> Set.remove previousCoordinates
-      >> Set.filter (\coordinatess -> getChar coordinatess maze == nextChar)
-      >> Set.toList >> List.head
+        >> Set.remove previousCoordinates
+        >> Set.filter (\coordinatess -> getChar coordinatess maze == nextChar)
+        >> Set.toList
+        >> List.head
+
 
 {-| 枝分かれ地点から枝を作っていく。
 -}
 makeBranch : Chooser -> Char -> String -> Path -> Maze -> Coordinates -> Maze
 makeBranch chooser currentChar currentRest endPath maze currentCoordinates =
-  case makeBranchAux chooser currentChar currentRest endPath maze Set.empty currentCoordinates of
-  MazeResult resultMaze -> resultMaze
+    case makeBranchAux chooser currentChar currentRest endPath maze Set.empty currentCoordinates of
+        MazeResult resultMaze ->
+            resultMaze
 
-  BackTrack _ ->
-      let
-          nextChooser =
-              next chooser
-      in
-      makeBranch nextChooser currentChar currentRest endPath maze currentCoordinates
+        BackTrack _ ->
+            let
+                nextChooser =
+                    next chooser
+            in
+            makeBranch nextChooser currentChar currentRest endPath maze currentCoordinates
+
 
 {-| 枝分かれからスタートして、行き止まりまでを作る。
 -}
@@ -423,11 +435,10 @@ makeBranchAux chooser currentChar currentRest endPath maze exceptions currentCoo
                 chooseNextCoordinates chooser maze exceptions currentCoordinates
         in
         case maybeNextCoordinates of
-            {- 選べる道が存在しないとき、つまり行き止まりの時は、そこで終了。
-            -}
+            {- 選べる道が存在しないとき、つまり行き止まりの時は、そこで終了。 -}
             Nothing ->
                 {- 行き止まりにはその最後までのPathの情報を格納する。 -}
-                MazeResult (insert currentCoordinates (Cell currentChar (Fork endPath)) maze) 
+                MazeResult (insert currentCoordinates (Cell currentChar (Fork endPath)) maze)
 
             {- 試しに選んだ道を伸ばしてみる。 -}
             Just ( nextCoordinates, nextChooser ) ->
@@ -446,18 +457,14 @@ makeBranchAux chooser currentChar currentRest endPath maze exceptions currentCoo
                         makeBranchAux nextChooser c rest endPath nextMaze Set.empty nextCoordinates
                 in
                 case result of
-                    {- 逆戻りの回数はここでは無視して、すぐにトラックバックする。
-                    -}
+                    {- 逆戻りの回数はここでは無視して、すぐにトラックバックする。 -}
                     BackTrack _ ->
                         makeBranchAux chooser currentChar currentRest endPath maze (Set.insert nextCoordinates exceptions) currentCoordinates
-
 
                     {- 道が伸ばせて、迷路が完成したらなら、そのまま返す。 -}
                     _ ->
                         result
-        
-        
-    
+
 
 
 -- CHOOSE
