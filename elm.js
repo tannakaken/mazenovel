@@ -7831,7 +7831,7 @@ var $author$project$Path$betweenForks = function (startPath) {
 		A2(
 			$elm$core$Basics$composeR,
 			$elm$core$List$drop(
-				$elm$core$List$length(startPath)),
+				$elm$core$List$length(startPath) + 1),
 			$elm$core$Set$fromList));
 };
 var $author$project$Util$getNth = F2(
@@ -8088,27 +8088,40 @@ var $elm$core$Set$union = F2(
 	});
 var $author$project$Main$makeAllBranch = F5(
 	function (random, novelTree, area, forks, maze) {
-		if ($elm$core$Set$isEmpty(forks)) {
-			return maze;
-		} else {
-			var _v0 = A2($author$project$Main$choosePathFromForks, random, forks);
-			var nextPath = _v0.a;
-			var nextRandom = _v0.b;
-			var chooser = $author$project$Maze$randomChooser(nextRandom);
-			var result = A3($author$project$Novel$select, nextRandom, nextPath, novelTree);
-			if (result.$ === 'Nothing') {
+		makeAllBranch:
+		while (true) {
+			if ($elm$core$Set$isEmpty(forks)) {
 				return maze;
 			} else {
-				var _v2 = result.a;
-				var nextNovel = _v2.a;
-				var completePath = _v2.b;
-				var newForks = A2(
-					$elm$core$Set$union,
-					A2($elm$core$Set$remove, nextPath, forks),
-					A2($author$project$Path$betweenForks, nextPath, completePath));
-				var branch = A2($author$project$Maze$Branch, nextPath, completePath);
-				var newMaze = A5($author$project$Maze$addBranch, chooser, nextNovel, area, branch, maze);
-				return newMaze;
+				var _v0 = A2($author$project$Main$choosePathFromForks, random, forks);
+				var nextPath = _v0.a;
+				var nextRandom = _v0.b;
+				var chooser = $author$project$Maze$randomChooser(nextRandom);
+				var result = A3($author$project$Novel$select, nextRandom, nextPath, novelTree);
+				if (result.$ === 'Nothing') {
+					return maze;
+				} else {
+					var _v2 = result.a;
+					var nextNovel = _v2.a;
+					var completePath = _v2.b;
+					var newForks = A2(
+						$elm$core$Set$union,
+						A2($elm$core$Set$remove, nextPath, forks),
+						A2($author$project$Path$betweenForks, nextPath, completePath));
+					var branch = A2($author$project$Maze$Branch, nextPath, completePath);
+					var newMaze = A5($author$project$Maze$addBranch, chooser, nextNovel, area, branch, maze);
+					var $temp$random = nextRandom,
+						$temp$novelTree = novelTree,
+						$temp$area = area,
+						$temp$forks = newForks,
+						$temp$maze = newMaze;
+					random = $temp$random;
+					novelTree = $temp$novelTree;
+					area = $temp$area;
+					forks = $temp$forks;
+					maze = $temp$maze;
+					continue makeAllBranch;
+				}
 			}
 		}
 	});
