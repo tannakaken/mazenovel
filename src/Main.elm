@@ -290,8 +290,10 @@ makeAllBranch random novelTree area forks maze =
                     newForks =
                         Set.union (Set.remove nextPath forks) (Path.betweenForks nextPath completePath)
 
+                    branch = Maze.Branch nextPath completePath
+
                     newMaze =
-                        Maze.addBranch chooser nextNovel area nextPath completePath maze
+                        Maze.addBranch chooser nextNovel area branch maze
                 in
                 {- makeAllBranch nextRandom novelTree area newForks newMaze -}
                 newMaze
