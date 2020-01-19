@@ -7183,6 +7183,10 @@ var $author$project$Main$defaultArea = {
 	right: $elm$core$Maybe$Nothing,
 	top: $elm$core$Maybe$Nothing
 };
+var $author$project$Maze$Branch = F2(
+	function (start, end) {
+		return {end: end, start: start};
+	});
 var $author$project$Maze$Start = {$: 'Start'};
 var $elm$core$List$head = function (list) {
 	if (list.b) {
@@ -7307,25 +7311,13 @@ var $author$project$Maze$followExistingRoad = F3(
 				A2(
 					$elm$core$Basics$composeR,
 					$elm$core$Set$filter(
-						function (coordinatess) {
+						function (coordinates) {
 							return _Utils_eq(
-								A2($author$project$Maze$getChar, coordinatess, maze),
+								A2($author$project$Maze$getChar, coordinates, maze),
 								nextChar);
 						}),
 					A2($elm$core$Basics$composeR, $elm$core$Set$toList, $elm$core$List$head))));
 	});
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $author$project$Maze$headChar = A2(
-	$elm$core$Basics$composeR,
-	$elm$core$String$toList,
-	A2(
-		$elm$core$Basics$composeR,
-		$elm$core$List$head,
-		$elm$core$Maybe$withDefault(
-			_Utils_chr('\u3000'))));
 var $author$project$Maze$insert = F3(
 	function (coordinates, c, maze) {
 		return A3($elm$core$Dict$insert, coordinates, c, maze);
@@ -7485,16 +7477,16 @@ var $elm$core$Set$diff = F2(
 			A2($elm$core$Dict$diff, dict1, dict2));
 	});
 var $author$project$Maze$choiceOfNextCoordinates = F4(
-	function (maze, area, exceptions, currentCoordinates) {
+	function (maze, area, exclusion, coordinates) {
 		return function (set) {
 			return A2(
 				$elm$core$Set$filter,
-				function (coordinates) {
-					return A4($author$project$Maze$canDig, maze, area, currentCoordinates, coordinates);
+				function (candidate) {
+					return A4($author$project$Maze$canDig, maze, area, coordinates, candidate);
 				},
-				A2($elm$core$Set$diff, set, exceptions));
+				A2($elm$core$Set$diff, set, exclusion));
 		}(
-			$author$project$Maze$vonNeumannNeighborhood(currentCoordinates));
+			$author$project$Maze$vonNeumannNeighborhood(coordinates));
 	});
 var $author$project$Maze$choose = F2(
 	function (_v0, coordinatess) {
@@ -7502,59 +7494,78 @@ var $author$project$Maze$choose = F2(
 		return chooser(coordinatess);
 	});
 var $author$project$Maze$chooseNextCoordinates = F5(
-	function (chooser, maze, area, exceptions, currentCoordinates) {
+	function (chooser, maze, area, exclusion, coordinates) {
 		return A2(
 			$author$project$Maze$choose,
 			chooser,
-			A4($author$project$Maze$choiceOfNextCoordinates, maze, area, exceptions, currentCoordinates));
+			A4($author$project$Maze$choiceOfNextCoordinates, maze, area, exclusion, coordinates));
 	});
-var $author$project$Maze$makeBranchAux = F8(
-	function (chooser, area, currentChar, currentRest, endPath, maze, exceptions, currentCoordinates) {
+var $author$project$Maze$Stream = F2(
+	function (head, rest) {
+		return {head: head, rest: rest};
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Maze$headChar = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$String$toList,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$head,
+		$elm$core$Maybe$withDefault(
+			_Utils_chr('\u3000'))));
+var $author$project$Maze$toStream = function (novel) {
+	return A2(
+		$author$project$Maze$Stream,
+		$author$project$Maze$headChar(novel),
+		A2($elm$core$String$dropLeft, 1, novel));
+};
+var $author$project$Maze$makeBranchAux = F7(
+	function (chooser, stream, area, path, exclusion, coordinates, maze) {
 		makeBranchAux:
 		while (true) {
-			if (!$elm$core$String$length(currentRest)) {
+			if (!$elm$core$String$length(stream.rest)) {
 				return $author$project$Maze$BackTrack(0);
 			} else {
-				var maybeNextCoordinates = A5($author$project$Maze$chooseNextCoordinates, chooser, maze, area, exceptions, currentCoordinates);
-				if (maybeNextCoordinates.$ === 'Nothing') {
+				var _v0 = A5($author$project$Maze$chooseNextCoordinates, chooser, maze, area, exclusion, coordinates);
+				if (_v0.$ === 'Nothing') {
 					return $author$project$Maze$MazeResult(
 						A3(
 							$author$project$Maze$insert,
-							currentCoordinates,
+							coordinates,
 							A2(
 								$author$project$Maze$Cell,
-								currentChar,
-								$author$project$Maze$Fork(endPath)),
+								stream.head,
+								$author$project$Maze$Fork(path)),
 							maze));
 				} else {
-					var _v1 = maybeNextCoordinates.a;
+					var _v1 = _v0.a;
 					var nextCoordinates = _v1.a;
 					var nextChooser = _v1.b;
-					var rest = A2($elm$core$String$dropLeft, 1, currentRest);
+					var nextStream = $author$project$Maze$toStream(stream.rest);
 					var nextMaze = A3(
 						$author$project$Maze$insert,
-						currentCoordinates,
-						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Space),
+						coordinates,
+						A2($author$project$Maze$Cell, stream.head, $author$project$Maze$Space),
 						maze);
-					var c = $author$project$Maze$headChar(currentRest);
-					var result = A8($author$project$Maze$makeBranchAux, nextChooser, area, c, rest, endPath, nextMaze, $elm$core$Set$empty, nextCoordinates);
+					var result = A7($author$project$Maze$makeBranchAux, nextChooser, nextStream, area, path, $elm$core$Set$empty, nextCoordinates, nextMaze);
 					if (result.$ === 'BackTrack') {
 						var $temp$chooser = chooser,
+							$temp$stream = stream,
 							$temp$area = area,
-							$temp$currentChar = currentChar,
-							$temp$currentRest = currentRest,
-							$temp$endPath = endPath,
-							$temp$maze = maze,
-							$temp$exceptions = A2($elm$core$Set$insert, nextCoordinates, exceptions),
-							$temp$currentCoordinates = currentCoordinates;
+							$temp$path = path,
+							$temp$exclusion = A2($elm$core$Set$insert, nextCoordinates, exclusion),
+							$temp$coordinates = coordinates,
+							$temp$maze = maze;
 						chooser = $temp$chooser;
+						stream = $temp$stream;
 						area = $temp$area;
-						currentChar = $temp$currentChar;
-						currentRest = $temp$currentRest;
-						endPath = $temp$endPath;
+						path = $temp$path;
+						exclusion = $temp$exclusion;
+						coordinates = $temp$coordinates;
 						maze = $temp$maze;
-						exceptions = $temp$exceptions;
-						currentCoordinates = $temp$currentCoordinates;
 						continue makeBranchAux;
 					} else {
 						return result;
@@ -7580,82 +7591,77 @@ var $author$project$Maze$next = function (chooser) {
 		return chooser;
 	}
 };
-var $author$project$Maze$makeBranch = F7(
-	function (chooser, area, currentChar, currentRest, endPath, maze, currentCoordinates) {
+var $author$project$Maze$makeBranch = F6(
+	function (chooser, stream, area, path, coordinates, maze) {
 		makeBranch:
 		while (true) {
-			var _v0 = A8($author$project$Maze$makeBranchAux, chooser, area, currentChar, currentRest, endPath, maze, $elm$core$Set$empty, currentCoordinates);
+			var _v0 = A7($author$project$Maze$makeBranchAux, chooser, stream, area, path, $elm$core$Set$empty, coordinates, maze);
 			if (_v0.$ === 'MazeResult') {
 				var resultMaze = _v0.a;
 				return resultMaze;
 			} else {
 				var nextChooser = $author$project$Maze$next(chooser);
 				var $temp$chooser = nextChooser,
+					$temp$stream = stream,
 					$temp$area = area,
-					$temp$currentChar = currentChar,
-					$temp$currentRest = currentRest,
-					$temp$endPath = endPath,
-					$temp$maze = maze,
-					$temp$currentCoordinates = currentCoordinates;
+					$temp$path = path,
+					$temp$coordinates = coordinates,
+					$temp$maze = maze;
 				chooser = $temp$chooser;
+				stream = $temp$stream;
 				area = $temp$area;
-				currentChar = $temp$currentChar;
-				currentRest = $temp$currentRest;
-				endPath = $temp$endPath;
+				path = $temp$path;
+				coordinates = $temp$coordinates;
 				maze = $temp$maze;
-				currentCoordinates = $temp$currentCoordinates;
 				continue makeBranch;
 			}
 		}
 	});
-var $author$project$Maze$gotoFork = F8(
-	function (chooser, area, currentRest, startPath, endPath, previousCoordinates, currentCoordinates, maze) {
+var $author$project$Maze$gotoFork = F7(
+	function (chooser, novel, area, branch, previousCoordinates, coordinates, maze) {
 		gotoFork:
 		while (true) {
-			if (!$elm$core$String$length(currentRest)) {
+			if (!$elm$core$String$length(novel)) {
 				return maze;
 			} else {
-				var nextRest = A2($elm$core$String$dropLeft, 1, currentRest);
-				var nextChar = $author$project$Maze$headChar(currentRest);
-				var _v0 = A4($author$project$Maze$followExistingRoad, maze, nextChar, previousCoordinates, currentCoordinates);
+				var stream = $author$project$Maze$toStream(novel);
+				var _v0 = A4($author$project$Maze$followExistingRoad, maze, stream.head, previousCoordinates, coordinates);
 				if (_v0.$ === 'Nothing') {
-					var forkChar = A2($author$project$Maze$getChar, currentCoordinates, maze);
+					var forkChar = A2($author$project$Maze$getChar, coordinates, maze);
 					var newMaze = A3(
 						$author$project$Maze$insert,
-						currentCoordinates,
+						coordinates,
 						A2(
 							$author$project$Maze$Cell,
 							forkChar,
-							$author$project$Maze$Fork(startPath)),
+							$author$project$Maze$Fork(branch.start)),
 						maze);
-					return A7($author$project$Maze$makeBranch, chooser, area, nextChar, nextRest, endPath, newMaze, currentCoordinates);
+					return A6($author$project$Maze$makeBranch, chooser, stream, area, branch.end, coordinates, newMaze);
 				} else {
 					var nextCoordinates = _v0.a;
 					var $temp$chooser = chooser,
+						$temp$novel = stream.rest,
 						$temp$area = area,
-						$temp$currentRest = nextRest,
-						$temp$startPath = startPath,
-						$temp$endPath = endPath,
-						$temp$previousCoordinates = currentCoordinates,
-						$temp$currentCoordinates = nextCoordinates,
+						$temp$branch = branch,
+						$temp$previousCoordinates = coordinates,
+						$temp$coordinates = nextCoordinates,
 						$temp$maze = maze;
 					chooser = $temp$chooser;
+					novel = $temp$novel;
 					area = $temp$area;
-					currentRest = $temp$currentRest;
-					startPath = $temp$startPath;
-					endPath = $temp$endPath;
+					branch = $temp$branch;
 					previousCoordinates = $temp$previousCoordinates;
-					currentCoordinates = $temp$currentCoordinates;
+					coordinates = $temp$coordinates;
 					maze = $temp$maze;
 					continue gotoFork;
 				}
 			}
 		}
 	});
-var $author$project$Maze$addBranch = F6(
-	function (chooser, area, novel, startPath, endPath, maze) {
+var $author$project$Maze$addBranch = F5(
+	function (chooser, novel, area, branch, maze) {
 		var start = $author$project$Maze$getStart(maze);
-		return A8($author$project$Maze$gotoFork, chooser, area, novel, startPath, endPath, start, start, maze);
+		return A7($author$project$Maze$gotoFork, chooser, novel, area, branch, start, start, maze);
 	});
 var $elm$core$List$drop = F2(
 	function (n, list) {
@@ -8096,60 +8102,58 @@ var $author$project$Main$makeAllBranch = F5(
 				var _v2 = result.a;
 				var nextNovel = _v2.a;
 				var completePath = _v2.b;
-				var newMaze = A6($author$project$Maze$addBranch, chooser, area, nextNovel, nextPath, completePath, maze);
 				var newForks = A2(
 					$elm$core$Set$union,
 					A2($elm$core$Set$remove, nextPath, forks),
 					A2($author$project$Path$betweenForks, nextPath, completePath));
+				var branch = A2($author$project$Maze$Branch, nextPath, completePath);
+				var newMaze = A5($author$project$Maze$addBranch, chooser, nextNovel, area, branch, maze);
 				return newMaze;
 			}
 		}
 	});
 var $author$project$Maze$empty = $elm$core$Dict$empty;
-var $author$project$Maze$makeExitAux = F7(
-	function (chooser, area, currentChar, currentRest, maze, exceptions, currentCoordinates) {
+var $author$project$Maze$makeExitAux = F6(
+	function (chooser, stream, area, exclusion, coordinates, maze) {
 		makeExitAux:
 		while (true) {
-			if (!$elm$core$String$length(currentRest)) {
+			if (!$elm$core$String$length(stream.rest)) {
 				return $author$project$Maze$MazeResult(
 					A3(
 						$author$project$Maze$insert,
-						currentCoordinates,
-						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Start),
+						coordinates,
+						A2($author$project$Maze$Cell, stream.head, $author$project$Maze$Start),
 						maze));
 			} else {
-				var maybeNextCoordinates = A5($author$project$Maze$chooseNextCoordinates, chooser, maze, area, exceptions, currentCoordinates);
-				if (maybeNextCoordinates.$ === 'Nothing') {
+				var _v0 = A5($author$project$Maze$chooseNextCoordinates, chooser, maze, area, exclusion, coordinates);
+				if (_v0.$ === 'Nothing') {
 					return $author$project$Maze$BackTrack(10);
 				} else {
-					var _v1 = maybeNextCoordinates.a;
+					var _v1 = _v0.a;
 					var nextCoordinates = _v1.a;
 					var nextChooser = _v1.b;
-					var rest = A2($elm$core$String$dropLeft, 1, currentRest);
+					var nextStream = $author$project$Maze$toStream(stream.rest);
 					var nextMaze = A3(
 						$author$project$Maze$insert,
-						currentCoordinates,
-						A2($author$project$Maze$Cell, currentChar, $author$project$Maze$Space),
+						coordinates,
+						A2($author$project$Maze$Cell, stream.head, $author$project$Maze$Space),
 						maze);
-					var c = $author$project$Maze$headChar(currentRest);
-					var result = A7($author$project$Maze$makeExitAux, nextChooser, area, c, rest, nextMaze, $elm$core$Set$empty, nextCoordinates);
+					var result = A6($author$project$Maze$makeExitAux, nextChooser, nextStream, area, $elm$core$Set$empty, nextCoordinates, nextMaze);
 					if (result.$ === 'BackTrack') {
 						var n = result.a;
 						if (!n) {
 							var $temp$chooser = chooser,
+								$temp$stream = stream,
 								$temp$area = area,
-								$temp$currentChar = currentChar,
-								$temp$currentRest = currentRest,
-								$temp$maze = maze,
-								$temp$exceptions = A2($elm$core$Set$insert, nextCoordinates, exceptions),
-								$temp$currentCoordinates = currentCoordinates;
+								$temp$exclusion = A2($elm$core$Set$insert, nextCoordinates, exclusion),
+								$temp$coordinates = coordinates,
+								$temp$maze = maze;
 							chooser = $temp$chooser;
+							stream = $temp$stream;
 							area = $temp$area;
-							currentChar = $temp$currentChar;
-							currentRest = $temp$currentRest;
+							exclusion = $temp$exclusion;
+							coordinates = $temp$coordinates;
 							maze = $temp$maze;
-							exceptions = $temp$exceptions;
-							currentCoordinates = $temp$currentCoordinates;
 							continue makeExitAux;
 						} else {
 							return $author$project$Maze$BackTrack(n - 1);
@@ -8163,24 +8167,22 @@ var $author$project$Maze$makeExitAux = F7(
 	});
 var $elm$core$String$reverse = _String_reverse;
 var $author$project$Maze$makeExit = F4(
-	function (chooser, area, novel, path) {
+	function (chooser, novel, area, path) {
 		makeExit:
 		while (true) {
 			if ($elm$core$String$isEmpty(novel)) {
 				return $author$project$Maze$empty;
 			} else {
 				var revNovel = $elm$core$String$reverse(novel);
-				var rest = A2($elm$core$String$dropLeft, 1, revNovel);
-				var c = $author$project$Maze$headChar(revNovel);
-				var _v0 = A7(
+				var stream = $author$project$Maze$toStream(revNovel);
+				var _v0 = A6(
 					$author$project$Maze$makeExitAux,
 					chooser,
+					stream,
 					area,
-					c,
-					rest,
-					$author$project$Maze$empty,
 					$elm$core$Set$empty,
-					_Utils_Tuple2(0, 0));
+					_Utils_Tuple2(0, 0),
+					$author$project$Maze$empty);
 				if (_v0.$ === 'MazeResult') {
 					var maze = _v0.a;
 					return A3(
@@ -8188,21 +8190,18 @@ var $author$project$Maze$makeExit = F4(
 						_Utils_Tuple2(0, 0),
 						A2(
 							$author$project$Maze$Cell,
-							A2(
-								$author$project$Maze$getChar,
-								_Utils_Tuple2(0, 0),
-								maze),
+							stream.head,
 							$author$project$Maze$Fork(path)),
 						maze);
 				} else {
 					var nextChooser = $author$project$Maze$next(chooser);
 					var $temp$chooser = nextChooser,
-						$temp$area = area,
 						$temp$novel = novel,
+						$temp$area = area,
 						$temp$path = path;
 					chooser = $temp$chooser;
-					area = $temp$area;
 					novel = $temp$novel;
+					area = $temp$area;
 					path = $temp$path;
 					continue makeExit;
 				}
@@ -8223,7 +8222,7 @@ var $author$project$Main$novelToMaze = F3(
 		var pathString = $author$project$Path$toString(novelPath);
 		var forks = $author$project$Path$toForks(novelPath);
 		var chooser = $author$project$Maze$randomChooser(random);
-		var maze = A4($author$project$Maze$makeExit, chooser, $author$project$Main$defaultArea, novel, novelPath);
+		var maze = A4($author$project$Maze$makeExit, chooser, novel, $author$project$Main$defaultArea, novelPath);
 		var area = $author$project$Maze$getArea(maze);
 		var completeMaze = A5($author$project$Main$makeAllBranch, random, novelTree, area, forks, maze);
 		return _Utils_Tuple2(completeMaze, pathString);
