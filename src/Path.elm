@@ -98,7 +98,7 @@ toForks =
 -}
 betweenForks : Path -> Path -> Forks
 betweenForks startPath =
-    throughList >> List.drop (List.length startPath) >> Set.fromList
+    throughList >> List.drop (List.length startPath + 1) >> Set.fromList
 
 
 throughList : Path -> List Path

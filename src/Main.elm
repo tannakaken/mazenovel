@@ -296,8 +296,7 @@ makeAllBranch random novelTree area forks maze =
                     newMaze =
                         Maze.addBranch chooser nextNovel area branch maze
                 in
-                {- makeAllBranch nextRandom novelTree area newForks newMaze -}
-                newMaze
+                makeAllBranch nextRandom novelTree area newForks newMaze
 
 
 choosePathFromForks : Random.Seed -> Path.Forks -> ( Path, Random.Seed )
