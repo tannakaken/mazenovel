@@ -238,16 +238,17 @@ headChar =
 
 {-| 最初の一文字を別に格納したデータ
 -}
-type alias Stream = 
-  { head : Char
-  , rest : String
-  }
+type alias Stream =
+    { head : Char
+    , rest : String
+    }
+
 
 {-| 迷路作成に使い安くする。
 -}
 toStream : String -> Stream
 toStream novel =
-    Stream 
+    Stream
         (headChar novel)
         (String.dropLeft 1 novel)
 
@@ -281,10 +282,9 @@ makeExit chooser novel area path =
         let
             revNovel =
                 String.reverse novel
-          
+
             stream =
                 toStream revNovel
-
         in
         case makeExitAux chooser stream empty area Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}
@@ -300,9 +300,11 @@ makeExit chooser novel area path =
                 in
                 makeExit nextChooser novel area path
 
+
 {-| 次の道の候補として除外する`Coordinates`の集合
 -}
-type alias Exclusion = Set Coordinates
+type alias Exclusion =
+    Set Coordinates
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
@@ -327,8 +329,8 @@ makeExitAux chooser stream maze area exclusion currentCoordinates =
             {- 試しに選んだ道を伸ばしてみる。 -}
             Just ( nextCoordinates, nextChooser ) ->
                 let
-                    nextStream = 
-                          toStream stream.rest
+                    nextStream =
+                        toStream stream.rest
 
                     nextMaze =
                         insert currentCoordinates (Cell stream.head Space) maze
@@ -388,14 +390,15 @@ addBranch chooser novel area startPath endPath maze =
 {-| 既に出来ている迷路を辿って、分かれ道（辿っている小説と迷路の小説が食い違う地点）まで進む。
 分かれ道へはそこまでの`Path`の情報を格納する。
 -}
-gotoFork : Chooser -> String -> Area -> Path -> Path -> Coordinates -> Coordinates -> Maze  -> Maze
+gotoFork : Chooser -> String -> Area -> Path -> Path -> Coordinates -> Coordinates -> Maze -> Maze
 gotoFork chooser novel area startPath endPath previousCoordinates currentCoordinates maze =
     if String.length novel == 0 then
         maze
 
     else
         let
-            stream = toStream novel
+            stream =
+                toStream novel
         in
         case followExistingRoad maze stream.head previousCoordinates currentCoordinates of
             {- 分かれ道まで来た -}
@@ -464,7 +467,8 @@ makeBranchAux chooser stream area endPath maze exclusion currentCoordinates =
             {- 試しに選んだ道を伸ばしてみる。 -}
             Just ( nextCoordinates, nextChooser ) ->
                 let
-                    nextStream = toStream stream.rest
+                    nextStream =
+                        toStream stream.rest
 
                     nextMaze =
                         insert currentCoordinates (Cell stream.head Space) maze

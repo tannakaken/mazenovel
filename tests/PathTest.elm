@@ -40,7 +40,7 @@ suite =
             [ test "make Forks between Path and Path" <|
                 \_ ->
                     Expect.equal
-                        (Path.betweenForks [1] [ 1, 2, 3 ])
+                        (Path.betweenForks [ 1 ] [ 1, 2, 3 ])
                         (Set.fromList [ [ 1 ], [ 1, 2 ] ])
             ]
         ]
