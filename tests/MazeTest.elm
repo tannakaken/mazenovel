@@ -82,11 +82,23 @@ suite =
                     Expect.equal
                         (Maze.choiceOfNextCoordinates (sampleMaze [ ( 0, 0 ) ]) defaultArea Set.empty ( 0, 0 ))
                         (Set.fromList [ ( 1, 0 ), ( -1, 0 ), ( 0, 1 ) ])
-            , test "exceptions of next coordinates" <|
+            , test "exclusion of next coordinates" <|
                 \_ ->
                     Expect.equal
                         (Maze.choiceOfNextCoordinates (sampleMaze [ ( 0, 0 ) ]) defaultArea (Set.fromList [ ( 0, 1 ) ]) ( 0, 0 ))
                         (Set.fromList [ ( 1, 0 ), ( -1, 0 ) ])
+            ]
+        , describe "Maze.followExistingRoad"
+            [ test "find follow exsiting road" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.followExistingRoad (sampleMaze [ ( 0, 0 ), ( 1, 0 ), ( 2, 0 ) ]) 'a' ( 0, 0 ) ( 1, 0 ))
+                        (Just ( 2, 0 ))
+            , test "can not find follow unexsiting road" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.followExistingRoad (sampleMaze [ ( 0, 0 ), ( 1, 0 ), ( 2, 0 ) ]) 'b' ( 0, 0 ) ( 1, 0 ))
+                        Nothing
             ]
         , describe "Maze.canDig"
             [ test "can dig coordinates if it make new path and does not make new intersection" <|

@@ -371,12 +371,13 @@ getStart =
         >> List.head
         >> Maybe.withDefault ( 0, 0 )
 
+
 {-| 枝分かれの始点と終点
 -}
 type alias Branch =
-  { start : Path
-  , end : Path
-  } 
+    { start : Path
+    , end : Path
+    }
 
 
 {-| 迷路の枝分かれから部分から行き止まりに到る分枝を作る。
