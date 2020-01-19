@@ -551,19 +551,19 @@ randomChooser seed =
 
 {-| 既に作られた迷路と`Area`と候補の除外リストと現在のセルから次のセルをChooserを使って選べたなら選ぶ。
 -}
-chooseNextCoordinates : Chooser -> Maze -> Area -> Set Coordinates -> Coordinates -> Maybe ( Coordinates, Chooser )
-chooseNextCoordinates chooser maze area exclusion currentCoordinates =
-    choiceOfNextCoordinates maze area exclusion currentCoordinates |> choose chooser
+chooseNextCoordinates : Chooser -> Maze -> Area -> Exclusion -> Coordinates -> Maybe ( Coordinates, Chooser )
+chooseNextCoordinates chooser maze area exclusion coordinates =
+    choiceOfNextCoordinates maze area exclusion coordinates |> choose chooser
 
 
 {-| 既に作られた迷路と`Area`と候補の除外リストと現在のCoordinatesから、次のセルの候補を返す。
 -}
-choiceOfNextCoordinates : Maze -> Area -> Set Coordinates -> Coordinates -> Set Coordinates
-choiceOfNextCoordinates maze area exclusion currentCoordinates =
-    vonNeumannNeighborhood currentCoordinates
+choiceOfNextCoordinates : Maze -> Area -> Exclusion -> Coordinates -> Set Coordinates
+choiceOfNextCoordinates maze area exclusion coordinates =
+    vonNeumannNeighborhood coordinates
         |> (\set ->
                 Set.diff set exclusion
-                    |> Set.filter (\coordinates -> canDig maze area currentCoordinates coordinates)
+                    |> Set.filter (\candidate -> canDig maze area coordinates candidate)
            )
 
 
