@@ -4,7 +4,7 @@ module Maze exposing
     , getChar, getKind
     , Area, getArea
     , makeExit
-    , Branch, addBranch, followExistingRoad
+    , Branch, addBranch, gotoForkAux ,followExistingRoad
     , Chooser(..), choose, next, randomChooser, choiceOfNextCoordinates
     , vonNeumannNeighborhood
     , canDig
@@ -40,7 +40,7 @@ module Maze exposing
 
 # Branch
 
-@docs Branch, addBranch, followExistingRoad
+@docs Branch, addBranch, gotoForkAux,followExistingRoad
 
 
 # Choose
@@ -390,12 +390,20 @@ addBranch chooser novel area branch maze =
     in
     gotoFork chooser novel area branch start start maze
 
+{-| gotoForkで分岐点まで行った後に処理を移譲される関数。
+-}
+type alias ForkContinuoation = Chooser -> Stream -> Area -> Path -> Coordinates -> Maze -> Maze
 
 {-| 既に出来ている迷路を辿って、分かれ道（辿っている小説と迷路の小説が食い違う地点）まで進む。
 分かれ道へはそこまでの`Path`の情報を格納する。
 -}
 gotoFork : Chooser -> String -> Area -> Branch -> Coordinates -> Coordinates -> Maze -> Maze
-gotoFork chooser novel area branch previousCoordinates coordinates maze =
+gotoFork = gotoForkAux makeBranch
+
+{-| 分かれ道まで行って、`ForkContinuoation`に処理を移譲する関数
+-}
+gotoForkAux : ForkContinuoation -> Chooser -> String -> Area -> Branch -> Coordinates -> Coordinates -> Maze -> Maze
+gotoForkAux cont chooser novel area branch previousCoordinates coordinates maze =
     if String.length novel == 0 then
         maze
 
@@ -415,7 +423,7 @@ gotoFork chooser novel area branch previousCoordinates coordinates maze =
                     newMaze =
                         insert coordinates (Cell forkChar (Fork branch.start)) maze
                 in
-                makeBranch chooser stream area branch.end coordinates newMaze
+                cont chooser stream area branch.end coordinates newMaze
 
             {- まだ分かれていない -}
             Just nextCoordinates ->
