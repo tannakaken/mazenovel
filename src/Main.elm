@@ -248,7 +248,7 @@ novelToMaze random novelTree ( novel, novelPath ) =
             Maze.randomChooser random
 
         maze =
-            Maze.makeExit chooser defaultArea novel novelPath
+            Maze.makeExit chooser novel defaultArea novelPath
 
         forks =
             Path.toForks novelPath
@@ -291,7 +291,7 @@ makeAllBranch random novelTree area forks maze =
                         Set.union (Set.remove nextPath forks) (Path.betweenForks nextPath completePath)
 
                     newMaze =
-                        Maze.addBranch chooser area nextNovel nextPath completePath maze
+                        Maze.addBranch chooser nextNovel area nextPath completePath maze
                 in
                 {- makeAllBranch nextRandom novelTree area newForks newMaze -}
                 newMaze

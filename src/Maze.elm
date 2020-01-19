@@ -4,7 +4,7 @@ module Maze exposing
     , getChar, getKind
     , Area, getArea
     , makeExit
-    , addBranch
+    , addBranch, followExistingRoad
     , Chooser(..), choose, next, randomChooser, choiceOfNextCoordinates
     , vonNeumannNeighborhood
     , canDig
@@ -40,7 +40,7 @@ module Maze exposing
 
 # Branch
 
-@docs addBranch
+@docs addBranch, followExistingRoad
 
 
 # Choose
@@ -236,11 +236,27 @@ headChar =
     String.toList >> List.head >> Maybe.withDefault '\u{3000}'
 
 
+{-| 最初の一文字を別に格納したデータ
+-}
+type alias Stream = 
+  { head : Char
+  , rest : String
+  }
+
+{-| 迷路作成に使い安くする。
+-}
+toStream : String -> Stream
+toStream novel =
+    Stream 
+        (headChar novel)
+        (String.dropLeft 1 novel)
+
+
 {-| 文字列から一本道の迷路を作る。
 これが迷路の出口への道になる
 例えば、
 
-    novelPath chooser "おはよう" [ 1 ]
+    makeExit chooser "おはよう" area [ 1 ]
 
 とすることで
 
@@ -256,8 +272,8 @@ headChar =
 `Fork [1]`となる。
 
 -}
-makeExit : Chooser -> Area -> String -> Path -> Maze
-makeExit chooser area novel path =
+makeExit : Chooser -> String -> Area -> Path -> Maze
+makeExit chooser novel area path =
     if String.isEmpty novel then
         empty
 
@@ -265,18 +281,16 @@ makeExit chooser area novel path =
         let
             revNovel =
                 String.reverse novel
+          
+            stream =
+                toStream revNovel
 
-            c =
-                headChar revNovel
-
-            rest =
-                String.dropLeft 1 revNovel
         in
-        case makeExitAux chooser area c rest empty Set.empty ( 0, 0 ) of
+        case makeExitAux chooser stream empty area Set.empty ( 0, 0 ) of
             {- 迷路が完成した場合。 -}
             MazeResult maze ->
                 {- ゴールにはそこまでのPathの情報を格納する。 -}
-                insert ( 0, 0 ) (Cell (getChar ( 0, 0 ) maze) (Fork path)) maze
+                insert ( 0, 0 ) (Cell stream.head (Fork path)) maze
 
             {- バックトラックで最初まで戻ってしまった時は、別の乱数を使う。 -}
             BackTrack _ ->
@@ -284,20 +298,24 @@ makeExit chooser area novel path =
                     nextChooser =
                         next chooser
                 in
-                makeExit nextChooser area novel path
+                makeExit nextChooser novel area path
+
+{-| 次の道の候補として除外する`Coordinates`の集合
+-}
+type alias Exclusion = Set Coordinates
 
 
 {-| 文字列から一つずつ文字を取って迷路に配置していく。
 -}
-makeExitAux : Chooser -> Area -> Char -> String -> Maze -> Set Coordinates -> Coordinates -> MazeResult
-makeExitAux chooser area currentChar currentRest maze exceptions currentCoordinates =
-    if String.length currentRest == 0 then
-        MazeResult (insert currentCoordinates (Cell currentChar Start) maze)
+makeExitAux : Chooser -> Stream -> Maze -> Area -> Exclusion -> Coordinates -> MazeResult
+makeExitAux chooser stream maze area exclusion currentCoordinates =
+    if String.length stream.rest == 0 then
+        MazeResult (insert currentCoordinates (Cell stream.head Start) maze)
 
     else
         let
             maybeNextCoordinates =
-                chooseNextCoordinates chooser maze area exceptions currentCoordinates
+                chooseNextCoordinates chooser maze area exclusion currentCoordinates
         in
         case maybeNextCoordinates of
             {- 選べる道が存在しないとき、つまり行き止まりの時は、
@@ -309,18 +327,15 @@ makeExitAux chooser area currentChar currentRest maze exceptions currentCoordina
             {- 試しに選んだ道を伸ばしてみる。 -}
             Just ( nextCoordinates, nextChooser ) ->
                 let
-                    c =
-                        headChar currentRest
-
-                    rest =
-                        String.dropLeft 1 currentRest
+                    nextStream = 
+                          toStream stream.rest
 
                     nextMaze =
-                        insert currentCoordinates (Cell currentChar Space) maze
+                        insert currentCoordinates (Cell stream.head Space) maze
 
                     {- 道をさらに伸ばす。 -}
                     result =
-                        makeExitAux nextChooser area c rest nextMaze Set.empty nextCoordinates
+                        makeExitAux nextChooser nextStream nextMaze area Set.empty nextCoordinates
                 in
                 case result of
                     {- 逆戻りの途中の時はさらに逆戻りする。
@@ -328,7 +343,7 @@ makeExitAux chooser area currentChar currentRest maze exceptions currentCoordina
                     -}
                     BackTrack n ->
                         if n == 0 then
-                            makeExitAux chooser area currentChar currentRest maze (Set.insert nextCoordinates exceptions) currentCoordinates
+                            makeExitAux chooser stream maze area (Set.insert nextCoordinates exclusion) currentCoordinates
 
                         else
                             BackTrack (n - 1)
@@ -361,32 +376,28 @@ getStart =
 
 {-| 迷路の枝分かれから部分から行き止まりに到る分枝を作る。
 -}
-addBranch : Chooser -> Area -> String -> Path -> Path -> Maze -> Maze
-addBranch chooser area novel startPath endPath maze =
+addBranch : Chooser -> String -> Area -> Path -> Path -> Maze -> Maze
+addBranch chooser novel area startPath endPath maze =
     let
         start =
             getStart maze
     in
-    gotoFork chooser area novel startPath endPath start start maze
+    gotoFork chooser novel area startPath endPath start start maze
 
 
 {-| 既に出来ている迷路を辿って、分かれ道（辿っている小説と迷路の小説が食い違う地点）まで進む。
 分かれ道へはそこまでの`Path`の情報を格納する。
 -}
-gotoFork : Chooser -> Area -> String -> Path -> Path -> Coordinates -> Coordinates -> Maze -> Maze
-gotoFork chooser area currentRest startPath endPath previousCoordinates currentCoordinates maze =
-    if String.length currentRest == 0 then
+gotoFork : Chooser -> String -> Area -> Path -> Path -> Coordinates -> Coordinates -> Maze  -> Maze
+gotoFork chooser novel area startPath endPath previousCoordinates currentCoordinates maze =
+    if String.length novel == 0 then
         maze
 
     else
         let
-            nextChar =
-                headChar currentRest
-
-            nextRest =
-                String.dropLeft 1 currentRest
+            stream = toStream novel
         in
-        case followExistingRoad maze nextChar previousCoordinates currentCoordinates of
+        case followExistingRoad maze stream.head previousCoordinates currentCoordinates of
             {- 分かれ道まで来た -}
             Nothing ->
                 let
@@ -397,11 +408,11 @@ gotoFork chooser area currentRest startPath endPath previousCoordinates currentC
                     newMaze =
                         insert currentCoordinates (Cell forkChar (Fork startPath)) maze
                 in
-                makeBranch chooser area nextChar nextRest endPath newMaze currentCoordinates
+                makeBranch chooser stream area endPath newMaze currentCoordinates
 
             {- まだ分かれていない -}
             Just nextCoordinates ->
-                gotoFork chooser area nextRest startPath endPath currentCoordinates nextCoordinates maze
+                gotoFork chooser stream.rest area startPath endPath currentCoordinates nextCoordinates maze
 
 
 {-| 小説に沿って既に存在している道をいく時に、次の道を求める。
@@ -417,9 +428,9 @@ followExistingRoad maze nextChar previousCoordinates =
 
 {-| 枝分かれ地点から枝を作っていく。
 -}
-makeBranch : Chooser -> Area -> Char -> String -> Path -> Maze -> Coordinates -> Maze
-makeBranch chooser area currentChar currentRest endPath maze currentCoordinates =
-    case makeBranchAux chooser area currentChar currentRest endPath maze Set.empty currentCoordinates of
+makeBranch : Chooser -> Stream -> Area -> Path -> Maze -> Coordinates -> Maze
+makeBranch chooser stream area endPath maze currentCoordinates =
+    case makeBranchAux chooser stream area endPath maze Set.empty currentCoordinates of
         MazeResult resultMaze ->
             resultMaze
 
@@ -428,48 +439,44 @@ makeBranch chooser area currentChar currentRest endPath maze currentCoordinates 
                 nextChooser =
                     next chooser
             in
-            makeBranch nextChooser area currentChar currentRest endPath maze currentCoordinates
+            makeBranch nextChooser stream area endPath maze currentCoordinates
 
 
 {-| 枝分かれからスタートして、行き止まりまでを作る。
 -}
-makeBranchAux : Chooser -> Area -> Char -> String -> Path -> Maze -> Set Coordinates -> Coordinates -> MazeResult
-makeBranchAux chooser area currentChar currentRest endPath maze exceptions currentCoordinates =
+makeBranchAux : Chooser -> Stream -> Area -> Path -> Maze -> Set Coordinates -> Coordinates -> MazeResult
+makeBranchAux chooser stream area endPath maze exclusion currentCoordinates =
     {- 分枝は最後までたどり着いては駄目。 -}
-    if String.length currentRest == 0 then
+    if String.length stream.rest == 0 then
         BackTrack 0
 
     else
         let
             maybeNextCoordinates =
-                chooseNextCoordinates chooser maze area exceptions currentCoordinates
+                chooseNextCoordinates chooser maze area exclusion currentCoordinates
         in
         case maybeNextCoordinates of
             {- 選べる道が存在しないとき、つまり行き止まりの時は、そこで終了。 -}
             Nothing ->
                 {- 行き止まりにはその最後までのPathの情報を格納する。 -}
-                MazeResult (insert currentCoordinates (Cell currentChar (Fork endPath)) maze)
+                MazeResult (insert currentCoordinates (Cell stream.head (Fork endPath)) maze)
 
             {- 試しに選んだ道を伸ばしてみる。 -}
             Just ( nextCoordinates, nextChooser ) ->
                 let
-                    c =
-                        headChar currentRest
-
-                    rest =
-                        String.dropLeft 1 currentRest
+                    nextStream = toStream stream.rest
 
                     nextMaze =
-                        insert currentCoordinates (Cell currentChar Space) maze
+                        insert currentCoordinates (Cell stream.head Space) maze
 
                     {- 道をさらに伸ばす。 -}
                     result =
-                        makeBranchAux nextChooser area c rest endPath nextMaze Set.empty nextCoordinates
+                        makeBranchAux nextChooser nextStream area endPath nextMaze Set.empty nextCoordinates
                 in
                 case result of
                     {- 逆戻りの回数はここでは無視して、すぐにトラックバックする。 -}
                     BackTrack _ ->
-                        makeBranchAux chooser area currentChar currentRest endPath maze (Set.insert nextCoordinates exceptions) currentCoordinates
+                        makeBranchAux chooser stream area endPath maze (Set.insert nextCoordinates exclusion) currentCoordinates
 
                     {- 道が伸ばせて、迷路が完成したらなら、そのまま返す。 -}
                     _ ->
@@ -549,17 +556,17 @@ randomChooser seed =
 {-| 既に作られた迷路と`Area`と候補の除外リストと現在のセルから次のセルをChooserを使って選べたなら選ぶ。
 -}
 chooseNextCoordinates : Chooser -> Maze -> Area -> Set Coordinates -> Coordinates -> Maybe ( Coordinates, Chooser )
-chooseNextCoordinates chooser maze area exceptions currentCoordinates =
-    choiceOfNextCoordinates maze area exceptions currentCoordinates |> choose chooser
+chooseNextCoordinates chooser maze area exclusion currentCoordinates =
+    choiceOfNextCoordinates maze area exclusion currentCoordinates |> choose chooser
 
 
 {-| 既に作られた迷路と`Area`と候補の除外リストと現在のCoordinatesから、次のセルの候補を返す。
 -}
 choiceOfNextCoordinates : Maze -> Area -> Set Coordinates -> Coordinates -> Set Coordinates
-choiceOfNextCoordinates maze area exceptions currentCoordinates =
+choiceOfNextCoordinates maze area exclusion currentCoordinates =
     vonNeumannNeighborhood currentCoordinates
         |> (\set ->
-                Set.diff set exceptions
+                Set.diff set exclusion
                     |> Set.filter (\coordinates -> canDig maze area currentCoordinates coordinates)
            )
 

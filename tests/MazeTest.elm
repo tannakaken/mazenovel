@@ -54,12 +54,12 @@ suite =
             [ test "make one coordinates path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.makeExit testChooser defaultArea "h" [])
+                        (Maze.makeExit testChooser "h" defaultArea [])
                         (Dict.fromList [ ( ( 0, 0 ), Maze.Cell 'h' (Maze.Fork []) ) ])
             , test "make two coordinates path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.makeExit testChooser defaultArea "he" [ 0, 0 ])
+                        (Maze.makeExit testChooser "he" defaultArea [ 0, 0 ])
                         (Dict.fromList
                             [ ( ( 0, 0 ), Maze.Cell 'e' (Maze.Fork [ 0, 0 ]) )
                             , ( ( -1, 0 ), Maze.Cell 'h' Maze.Start )
@@ -68,7 +68,7 @@ suite =
             , test "make three coordinates path" <|
                 \_ ->
                     Expect.equal
-                        (Maze.makeExit testChooser defaultArea "hel" [ 1 ])
+                        (Maze.makeExit testChooser "hel" defaultArea [ 1 ])
                         (Dict.fromList
                             [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 1 ]) )
                             , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )

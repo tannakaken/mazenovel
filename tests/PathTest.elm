@@ -36,4 +36,11 @@ suite =
                         (Path.toForks [ 1, 2, 3 ])
                         (Set.fromList [ [], [ 1 ], [ 1, 2 ] ])
             ]
+        , describe "Path.betweenForks"
+            [ test "make Forks between Path and Path" <|
+                \_ ->
+                    Expect.equal
+                        (Path.betweenForks [1] [ 1, 2, 3 ])
+                        (Set.fromList [ [ 1 ], [ 1, 2 ] ])
+            ]
         ]
