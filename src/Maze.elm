@@ -432,7 +432,7 @@ gotoForkAux cont chooser novel area branch previousCoordinates coordinates maze 
 
             {- まだ分かれていない -}
             Just nextCoordinates ->
-                gotoFork chooser stream.rest area branch coordinates nextCoordinates maze
+                gotoForkAux cont chooser stream.rest area branch coordinates nextCoordinates maze
 
 
 {-| 小説に沿って既に存在している道をいく時に、次の道を求める。
