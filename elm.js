@@ -7322,6 +7322,71 @@ var $author$project$Maze$insert = F3(
 	function (coordinates, c, maze) {
 		return A3($elm$core$Dict$insert, coordinates, c, maze);
 	});
+var $author$project$Maze$Stream = F2(
+	function (head, rest) {
+		return {head: head, rest: rest};
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Maze$headChar = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$String$toList,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$head,
+		$elm$core$Maybe$withDefault(
+			_Utils_chr('\u3000'))));
+var $author$project$Maze$toStream = function (novel) {
+	return A2(
+		$author$project$Maze$Stream,
+		$author$project$Maze$headChar(novel),
+		A2($elm$core$String$dropLeft, 1, novel));
+};
+var $author$project$Maze$gotoForkAux = F8(
+	function (cont, chooser, novel, area, branch, previousCoordinates, coordinates, maze) {
+		gotoForkAux:
+		while (true) {
+			if (!$elm$core$String$length(novel)) {
+				return maze;
+			} else {
+				var stream = $author$project$Maze$toStream(novel);
+				var _v0 = A4($author$project$Maze$followExistingRoad, maze, stream.head, previousCoordinates, coordinates);
+				if (_v0.$ === 'Nothing') {
+					var forkChar = A2($author$project$Maze$getChar, coordinates, maze);
+					var newMaze = A3(
+						$author$project$Maze$insert,
+						coordinates,
+						A2(
+							$author$project$Maze$Cell,
+							forkChar,
+							$author$project$Maze$Fork(branch.start)),
+						maze);
+					return A6(cont, chooser, stream, area, branch.end, coordinates, newMaze);
+				} else {
+					var nextCoordinates = _v0.a;
+					var $temp$cont = cont,
+						$temp$chooser = chooser,
+						$temp$novel = stream.rest,
+						$temp$area = area,
+						$temp$branch = branch,
+						$temp$previousCoordinates = coordinates,
+						$temp$coordinates = nextCoordinates,
+						$temp$maze = maze;
+					cont = $temp$cont;
+					chooser = $temp$chooser;
+					novel = $temp$novel;
+					area = $temp$area;
+					branch = $temp$branch;
+					previousCoordinates = $temp$previousCoordinates;
+					coordinates = $temp$coordinates;
+					maze = $temp$maze;
+					continue gotoForkAux;
+				}
+			}
+		}
+	});
 var $author$project$Maze$BackTrack = function (a) {
 	return {$: 'BackTrack', a: a};
 };
@@ -7500,28 +7565,6 @@ var $author$project$Maze$chooseNextCoordinates = F5(
 			chooser,
 			A4($author$project$Maze$choiceOfNextCoordinates, maze, area, exclusion, coordinates));
 	});
-var $author$project$Maze$Stream = F2(
-	function (head, rest) {
-		return {head: head, rest: rest};
-	});
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $author$project$Maze$headChar = A2(
-	$elm$core$Basics$composeR,
-	$elm$core$String$toList,
-	A2(
-		$elm$core$Basics$composeR,
-		$elm$core$List$head,
-		$elm$core$Maybe$withDefault(
-			_Utils_chr('\u3000'))));
-var $author$project$Maze$toStream = function (novel) {
-	return A2(
-		$author$project$Maze$Stream,
-		$author$project$Maze$headChar(novel),
-		A2($elm$core$String$dropLeft, 1, novel));
-};
 var $author$project$Maze$makeBranchAux = F7(
 	function (chooser, stream, area, path, exclusion, coordinates, maze) {
 		makeBranchAux:
@@ -7617,47 +7660,7 @@ var $author$project$Maze$makeBranch = F6(
 			}
 		}
 	});
-var $author$project$Maze$gotoFork = F7(
-	function (chooser, novel, area, branch, previousCoordinates, coordinates, maze) {
-		gotoFork:
-		while (true) {
-			if (!$elm$core$String$length(novel)) {
-				return maze;
-			} else {
-				var stream = $author$project$Maze$toStream(novel);
-				var _v0 = A4($author$project$Maze$followExistingRoad, maze, stream.head, previousCoordinates, coordinates);
-				if (_v0.$ === 'Nothing') {
-					var forkChar = A2($author$project$Maze$getChar, coordinates, maze);
-					var newMaze = A3(
-						$author$project$Maze$insert,
-						coordinates,
-						A2(
-							$author$project$Maze$Cell,
-							forkChar,
-							$author$project$Maze$Fork(branch.start)),
-						maze);
-					return A6($author$project$Maze$makeBranch, chooser, stream, area, branch.end, coordinates, newMaze);
-				} else {
-					var nextCoordinates = _v0.a;
-					var $temp$chooser = chooser,
-						$temp$novel = stream.rest,
-						$temp$area = area,
-						$temp$branch = branch,
-						$temp$previousCoordinates = coordinates,
-						$temp$coordinates = nextCoordinates,
-						$temp$maze = maze;
-					chooser = $temp$chooser;
-					novel = $temp$novel;
-					area = $temp$area;
-					branch = $temp$branch;
-					previousCoordinates = $temp$previousCoordinates;
-					coordinates = $temp$coordinates;
-					maze = $temp$maze;
-					continue gotoFork;
-				}
-			}
-		}
-	});
+var $author$project$Maze$gotoFork = $author$project$Maze$gotoForkAux($author$project$Maze$makeBranch);
 var $author$project$Maze$addBranch = F5(
 	function (chooser, novel, area, branch, maze) {
 		var start = $author$project$Maze$getStart(maze);
