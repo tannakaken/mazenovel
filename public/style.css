@@ -1,5 +1,10 @@
 body {
   line-height: 1em;
+  width: 1000px;
+}
+
+article.main {
+  overflow: scroll;
 }
 
 span.wall {
