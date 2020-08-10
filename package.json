@@ -19,7 +19,7 @@
   "license": "CC-BY-SA-4.0",
   "devDependencies": {
     "elm-doc-preview": "^3.0.4",
-    "elm-format": "^0.8.2",
+    "elm-format": "^0.8.3",
     "elm-test": "^0.19.1-revision2"
   },
   "dependencies": {

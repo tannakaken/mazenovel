@@ -47,6 +47,11 @@ defaultArea =
     }
 
 
+defaultForkContinuation : Maze.ForkContinuoation
+defaultForkContinuation _ _ _ _ _ maze =
+    maze
+
+
 suite : Test
 suite =
     describe "The Maze module"
@@ -73,6 +78,95 @@ suite =
                             [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 1 ]) )
                             , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
                             , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                            ]
+                        )
+            ]
+        , describe "Maze.addBranch"
+            [ test "get start" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.getStart
+                            (Dict.fromList
+                                [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                                , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
+                                , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                                ]
+                            )
+                        )
+                        ( -2, 0 )
+            , test "add a branch" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.addBranch testChooser
+                            "heyab"
+                            { top = Nothing
+                            , right = Just 0
+                            , bottom = Just 0
+                            , left = Just -2
+                            }
+                            { start = []
+                            , end = [ 1 ]
+                            }
+                            (Dict.fromList
+                                [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                                , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
+                                , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                                ]
+                            )
+                        )
+                        (Dict.fromList
+                            [ ( ( -1, 1 ), Maze.Cell 'y' (Maze.Fork [ 1 ]) )
+                            , ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                            , ( ( -1, 0 ), Maze.Cell 'e' (Maze.Fork []) )
+                            , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                            ]
+                        )
+            , test "go to fork aux function" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.gotoForkAux defaultForkContinuation
+                            ( -2, 0 )
+                            ( -2, 0 )
+                            testChooser
+                            "ey"
+                            defaultArea
+                            { start = [], end = [ 1 ] }
+                            (Dict.fromList
+                                [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                                , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
+                                , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                                ]
+                            )
+                        )
+                        (Dict.fromList
+                            [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                            , ( ( -1, 0 ), Maze.Cell 'e' (Maze.Fork []) )
+                            , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                            ]
+                        )
+            , test "go to fork aux function, again" <|
+                \_ ->
+                    Expect.equal
+                        (Maze.gotoForkAux defaultForkContinuation
+                            ( -3, 0 )
+                            ( -3, 0 )
+                            testChooser
+                            "eka"
+                            defaultArea
+                            { start = [], end = [ 1 ] }
+                            (Dict.fromList
+                                [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                                , ( ( -1, 0 ), Maze.Cell 'l' Maze.Space )
+                                , ( ( -2, 0 ), Maze.Cell 'e' Maze.Space )
+                                , ( ( -3, 0 ), Maze.Cell 'h' Maze.Start )
+                                ]
+                            )
+                        )
+                        (Dict.fromList
+                            [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 0 ]) )
+                            , ( ( -1, 0 ), Maze.Cell 'l' Maze.Space )
+                            , ( ( -2, 0 ), Maze.Cell 'e' (Maze.Fork []) )
+                            , ( ( -3, 0 ), Maze.Cell 'h' Maze.Start )
                             ]
                         )
             ]

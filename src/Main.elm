@@ -247,17 +247,17 @@ novelToMaze random novelTree ( novel, novelPath ) =
         chooser =
             Maze.randomChooser random
 
-        maze =
+        oneWayMaze =
             Maze.makeExit chooser novel defaultArea novelPath
 
         forks =
             Path.toForks novelPath
 
         area =
-            Maze.getArea maze
+            Maze.getArea oneWayMaze
 
         completeMaze =
-            makeAllBranch random novelTree area forks maze
+            makeAllBranch random novelTree area forks oneWayMaze
 
         pathString =
             Path.toString novelPath
