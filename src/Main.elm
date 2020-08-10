@@ -234,10 +234,10 @@ randomMaze model novelTree =
 
 defaultArea : Maze.Area
 defaultArea =
-    { top = Nothing
-    , right = Nothing
+    { top = Just 50
+    , right = Just 25
     , bottom = Just 0
-    , left = Nothing
+    , left = Just -25
     }
 
 
