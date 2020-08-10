@@ -7177,11 +7177,14 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $author$project$Main$defaultArea = {
 	bottom: $elm$core$Maybe$Just(0),
-	left: $elm$core$Maybe$Nothing,
-	right: $elm$core$Maybe$Nothing,
-	top: $elm$core$Maybe$Nothing
+	left: $elm$core$Maybe$Just(-25),
+	right: $elm$core$Maybe$Just(25),
+	top: $elm$core$Maybe$Just(50)
 };
 var $author$project$Maze$Branch = F2(
 	function (start, end) {
@@ -7855,9 +7858,6 @@ var $elm$random$Random$Generator = function (a) {
 	return {$: 'Generator', a: a};
 };
 var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$core$Bitwise$xor = _Bitwise_xor;
 var $elm$random$Random$peel = function (_v0) {
 	var state = _v0.a;
