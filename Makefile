@@ -22,7 +22,7 @@ new:
 	perl new.pl
 
 serve:
-	php -S localhost:8000 -t public/
+	php -S 0.0.0.0:8000 -t public/
 
 .PHONY: test
 test: $(SRC) $(TESTS)

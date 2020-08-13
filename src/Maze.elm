@@ -212,7 +212,7 @@ getArea maze =
             (\( x, y ) { top, right, bottom, left } ->
                 Area (Just (max y (Maybe.withDefault 0 top)))
                     (Just (max x (Maybe.withDefault 0 right)))
-                    (Just (min y (Maybe.withDefault 0 bottom)))
+                    (Just (min (y + 1) (Maybe.withDefault 0 bottom)))
                     (Just (min x (Maybe.withDefault 0 left)))
             )
             (Area Nothing Nothing Nothing Nothing)
@@ -287,6 +287,7 @@ makeExit chooser novel area path =
             stream =
                 toStream revNovel
 
+            {- 最後の句点・クエスチョンマークを出口にするため特別扱い -}
             newStream =
                 toStream stream.rest
         in

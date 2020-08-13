@@ -234,10 +234,10 @@ randomMaze model novelTree =
 
 defaultArea : Maze.Area
 defaultArea =
-    { top = Just 50
-    , right = Just 25
+    { top = Just 60
+    , right = Just 30
     , bottom = Just 0
-    , left = Just -25
+    , left = Just -30
     }
 
 
@@ -351,7 +351,7 @@ mazeRows area maze =
 
 mazeRowsAux : Area -> Maze -> Int -> List (Html msg) -> List (Html msg)
 mazeRowsAux area maze row acc =
-    if row < Maybe.withDefault 0 area.bottom then
+    if row < (Maybe.withDefault 0 area.bottom - 1) then
         acc
 
     else
