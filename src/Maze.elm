@@ -286,12 +286,15 @@ makeExit chooser novel area path =
 
             stream =
                 toStream revNovel
+
+            newStream =
+                toStream stream.rest
         in
-        case makeExitAux chooser stream area Set.empty ( 0, 0 ) empty of
+        case makeExitAux chooser newStream area Set.empty ( 0, 0 ) empty of
             {- 迷路が完成した場合。 -}
             MazeResult maze ->
                 {- ゴールにはそこまでのPathの情報を格納する。 -}
-                insert ( 0, 0 ) (Cell stream.head (Fork path)) maze
+                insert ( 0, -1 ) (Cell stream.head (Fork path)) maze
 
             {- バックトラックで最初まで戻ってしまった時は、別の乱数を使う。 -}
             BackTrack _ ->
