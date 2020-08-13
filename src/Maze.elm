@@ -4,11 +4,10 @@ module Maze exposing
     , getChar, getKind
     , Area, getArea
     , makeExit
-    , Branch, addBranch, gotoForkAux, followExistingRoad
+    , Branch, addBranch, gotoForkAux, followExistingRoad, ForkContinuoation, getStart, gotoFork
     , Chooser(..), choose, next, randomChooser, choiceOfNextCoordinates
     , vonNeumannNeighborhood
     , canDig
-    , ForkContinuoation, getStart, gotoFork
     )
 
 {-| 小説を二次元のセル上に配置した小説迷路に関するモジュール。
