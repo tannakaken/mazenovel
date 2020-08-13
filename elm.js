@@ -6974,7 +6974,7 @@ var $author$project$Maze$getArea = function (maze) {
 					$elm$core$Maybe$Just(
 						A2(
 							$elm$core$Basics$min,
-							y,
+							y + 1,
 							A2($elm$core$Maybe$withDefault, 0, bottom))),
 					$elm$core$Maybe$Just(
 						A2(
@@ -7085,7 +7085,7 @@ var $author$project$Main$mazeColumnsAux = F5(
 		while (true) {
 			if (_Utils_cmp(
 				column,
-				A2($elm$core$Maybe$withDefault, 0, area.right)) > 0) {
+				A2($elm$core$Maybe$withDefault, 0, area.right) + 1) > 0) {
 				return acc;
 			} else {
 				var $temp$area = area,
@@ -7117,7 +7117,7 @@ var $author$project$Main$mazeColumns = F3(
 			area,
 			maze,
 			row,
-			A2($elm$core$Maybe$withDefault, 0, area.left),
+			A2($elm$core$Maybe$withDefault, 0, area.left) - 1,
 			_List_Nil);
 	});
 var $author$project$Main$mazeRowsAux = F4(
@@ -7126,7 +7126,7 @@ var $author$project$Main$mazeRowsAux = F4(
 		while (true) {
 			if (_Utils_cmp(
 				row,
-				A2($elm$core$Maybe$withDefault, 0, area.bottom)) < 0) {
+				A2($elm$core$Maybe$withDefault, 0, area.bottom) - 1) < 0) {
 				return acc;
 			} else {
 				var $temp$area = area,
@@ -7155,7 +7155,7 @@ var $author$project$Main$mazeRows = F2(
 			$author$project$Main$mazeRowsAux,
 			area,
 			maze,
-			A2($elm$core$Maybe$withDefault, 0, area.top),
+			A2($elm$core$Maybe$withDefault, 0, area.top) + 1,
 			_List_Nil);
 	});
 var $elm$random$Random$Seed = F2(
@@ -7182,9 +7182,9 @@ var $elm$core$Basics$negate = function (n) {
 };
 var $author$project$Main$defaultArea = {
 	bottom: $elm$core$Maybe$Just(0),
-	left: $elm$core$Maybe$Just(-25),
-	right: $elm$core$Maybe$Just(25),
-	top: $elm$core$Maybe$Just(50)
+	left: $elm$core$Maybe$Just(-30),
+	right: $elm$core$Maybe$Just(30),
+	top: $elm$core$Maybe$Just(60)
 };
 var $author$project$Maze$Branch = F2(
 	function (start, end) {
@@ -8200,10 +8200,11 @@ var $author$project$Maze$makeExit = F4(
 			} else {
 				var revNovel = $elm$core$String$reverse(novel);
 				var stream = $author$project$Maze$toStream(revNovel);
+				var newStream = $author$project$Maze$toStream(stream.rest);
 				var _v0 = A6(
 					$author$project$Maze$makeExitAux,
 					chooser,
-					stream,
+					newStream,
 					area,
 					$elm$core$Set$empty,
 					_Utils_Tuple2(0, 0),
@@ -8212,7 +8213,7 @@ var $author$project$Maze$makeExit = F4(
 					var maze = _v0.a;
 					return A3(
 						$author$project$Maze$insert,
-						_Utils_Tuple2(0, 0),
+						_Utils_Tuple2(0, -1),
 						A2(
 							$author$project$Maze$Cell,
 							stream.head,
