@@ -56,18 +56,13 @@ suite : Test
 suite =
     describe "The Maze module"
         [ describe "Maze.makeExit"
-            [ test "make one coordinates path" <|
-                \_ ->
-                    Expect.equal
-                        (Maze.makeExit testChooser "h" defaultArea [])
-                        (Dict.fromList [ ( ( 0, 0 ), Maze.Cell 'h' (Maze.Fork []) ) ])
-            , test "make two coordinates path" <|
+            [ test "make two coordinates path" <|
                 \_ ->
                     Expect.equal
                         (Maze.makeExit testChooser "he" defaultArea [ 0, 0 ])
                         (Dict.fromList
-                            [ ( ( 0, 0 ), Maze.Cell 'e' (Maze.Fork [ 0, 0 ]) )
-                            , ( ( -1, 0 ), Maze.Cell 'h' Maze.Start )
+                            [ ( ( 0, -1 ), Maze.Cell 'e' (Maze.Fork [ 0, 0 ]) )
+                            , ( ( 0, 0 ), Maze.Cell 'h' Maze.Start )
                             ]
                         )
             , test "make three coordinates path" <|
@@ -75,9 +70,9 @@ suite =
                     Expect.equal
                         (Maze.makeExit testChooser "hel" defaultArea [ 1 ])
                         (Dict.fromList
-                            [ ( ( 0, 0 ), Maze.Cell 'l' (Maze.Fork [ 1 ]) )
-                            , ( ( -1, 0 ), Maze.Cell 'e' Maze.Space )
-                            , ( ( -2, 0 ), Maze.Cell 'h' Maze.Start )
+                            [ ( ( 0, -1 ), Maze.Cell 'l' (Maze.Fork [ 1 ]) )
+                            , ( ( 0, 0 ), Maze.Cell 'e' Maze.Space )
+                            , ( ( -1, 0 ), Maze.Cell 'h' Maze.Start )
                             ]
                         )
             ]

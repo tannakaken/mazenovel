@@ -41,7 +41,7 @@ module Maze exposing
 
 # Branch
 
-@docs Branch, addBranch, gotoForkAux, followExistingRoad
+@docs Branch, addBranch, gotoForkAux, followExistingRoad, ForkContinuoation, getStart, gotoFork
 
 
 # Choose
@@ -179,27 +179,32 @@ type alias Area =
 
 
 {-| その迷路から、その迷路が含まれる範囲を返す。
+ただし、迷路の一番外側を一つだけ出口の開いた壁にしたいので、
+出口の座標を必ず(0, -1)とし、
+出口の一つ前の座標を(0, 0)であることを前提にして、
+下限はこの出口を含まず計算する。
+迷路を作成する際は必ずbottom=0となるようなAreaを使うこと。
 
-    迷路
-    　の
-    　中で
+    迷
+    路の中
+    　　で
 
 のAreaを求めると
 
     let
         maze =
             Maze.empty
-                |> insert ( 2, 0 ) (Cell '迷' Start)
-                |> insert ( 2, 1 ) (Cell '路' Space)
-                |> insert ( 1, 1 ) (Cell 'の' Space)
-                |> insert ( 0, 1 ) (Cell '中' Space)
-                |> insert ( 0, 2 ) (Cell 'で' Space)
+                |> insert ( -2, 1 ) (Cell '迷' Start)
+                |> insert ( -2, 0 ) (Cell '路' Space)
+                |> insert ( -1, 0 ) (Cell 'の' Space)
+                |> insert ( 0, 0 ) (Cell '中' Space)
+                |> insert ( 0, -1 ) (Fork 'で' [])
     in
     Maze.getArea maze
-        == { top = Just 2
-           , right = Just 2
+        == { top = Just 1
+           , right = Just 1
            , bottom = Just 0
-           , left = Just 0
+           , left = Just -2
            }
 
 となる。
@@ -255,7 +260,7 @@ toStream novel =
 
 
 {-| 文字列から一本道の迷路を作る。
-これが迷路の出口への道になる
+これが迷路の出口への道になる。
 例えば、
 
     makeExit chooser "おはよう" area [ 1 ]
@@ -272,6 +277,11 @@ toStream novel =
 またゴールである`'う'`の`Cell`は、
 そこまでの道順の情報である`[1]`が格納された、
 `Fork [1]`となる。
+
+ただし、迷路の一番外側を一つだけ出口の開いた壁にしたいので、
+出口の座標を必ず(0, -1)とし、
+出口の一つ前の座標を(0, 0)にしている。
+この関数の引数のAreaは必ずbottom=0となるようなものを使うこと。
 
 -}
 makeExit : Chooser -> String -> Area -> Path -> Maze
