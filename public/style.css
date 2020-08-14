@@ -1,10 +1,11 @@
-body {
-  line-height: 1em;
-  width: 1024px;
+* {
+  margin: 0;
+  padding: 0;
 }
 
 article.main {
   overflow: scroll;
+  text-align: center;
 }
 
 div.maze {
@@ -12,6 +13,7 @@ div.maze {
   line-height: 16px;
   background-color: black;
 }
+
 
 span.space {
   color: black;
@@ -46,4 +48,95 @@ div.error {
     font-size: 6px;
     line-height: 6px;
   }
+}
+
+header {
+  background-color: #BF4600;
+  width: 100%;
+}
+
+header h1 {
+  font-size: small;
+  float:left;
+}
+
+header h1 a {
+  text-decoration: none;
+  color: white;
+}
+
+header h1 a:hover {
+  color: #95BC7D;
+
+}
+
+header ul#link {
+  list-style: none;
+}
+header  li {
+  margin-left: 1em;
+  font-size: x-small;
+  float:left;
+}
+header ul:after {
+  content: "";
+  clear: both;
+  display:block;
+}
+
+div.bookmark {
+  margin: 20px;
+}
+
+div.explanation {
+  margin: 10px;
+}
+
+footer {
+  font-size: small;
+  line-height: 120%;
+  margin-top: 5px;
+  text-align: center;
+  background-color: #BF4600;
+  color: white;
+  width: 100%;
+  bottom: 0;
+}
+
+
+footer dt {
+  float:left;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+
+@media screen and (min-width: 768px) {
+
+header h1 {
+  font-size: 32px;
+  padding: 0 160px 0 60px;
+}
+
+header li {
+  font-size: medium;
+}
+
+footer {
+  font-size: medium;
+  height: 120px;
+  margin-top: 270px;
+}
+
+footer * {
+  margin: 0 10px;
+  padding-top: 5px;
+}
+
+footer dt {
+  float:none;
+}
+
+footer p, address, dd, dt {
+  display: inline-block;
 }

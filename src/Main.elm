@@ -354,9 +354,9 @@ randomMazeHtml model novelTree =
                 area =
                     Maze.getArea maze
             in
-            article [ class "main" ]
+            div [ class "wrapper" ]
                 [ header [ class "header" ]
-                    [ h1 [] [ text "迷路小説" ]
+                    [ h1 [] [ a [ href "/" ] [ text "迷路小説" ] ]
                     , ul [ id "link" ]
                         [ li [] [ a [ href "http://blog.livedoor.jp/kensaku_gokuraku/" ] [ text "ブログ" ] ]
                         , li [] [ a [ href "https://twitter.com/tannakaken//" ] [ text "Twitter" ] ]
@@ -364,9 +364,9 @@ randomMazeHtml model novelTree =
                         , li [] [ a [ href "https://gallery.tannakaken.xyz/feedback/" ] [ text "フィードバック" ] ]
                         ]
                     ]
-                , div [ class "maze" ] <| mazeRows area maze
+                , article [ class "main" ] [ div [ class "maze" ] <| mazeRows area maze ]
                 , div [ class "bookmark" ] [ p [] [ text "ブックマーク用URL:", seedLink model ] ]
-                , div [ class "explain" ]
+                , div [ class "explanation" ]
                     [ p [] [ text "リロードするたびに迷路は再生成されます。お気に入りの迷路が現れた場合は、このブックマーク用のURLをクリックしてからブックマークしてください。" ]
                     , p [] [ text "分かれ道や行き止まりはリンクになっています。クリックすると、その分岐がゴールへと繋がる迷路が生成されます。" ]
                     , p [] [ text "迷路の生成に時間がかかる場合がありますので、お待ちください。" ]
@@ -414,7 +414,7 @@ mazeRowsAux area maze row acc =
         acc
 
     else
-        mazeRowsAux area maze (row - 1) (acc ++ [ div [] (mazeColumns area maze row) ])
+        mazeRowsAux area maze (row - 1) (acc ++ [ div [ class "row" ] (mazeColumns area maze row) ])
 
 
 mazeColumns : Area -> Maze -> Int -> List (Html msg)
