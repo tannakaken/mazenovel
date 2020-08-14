@@ -24,8 +24,17 @@ span.start {
 }
 
 span.fork {
-  color: green;
   background-color: white;
+}
+
+span.fork a {
+  color: blue;
+  text-decoration: none;
+}
+
+span.fork a:hover {
+  color: green;
+  text-decoration: underline;
 }
 
 div.error {

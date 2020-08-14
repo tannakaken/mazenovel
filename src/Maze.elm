@@ -1,7 +1,7 @@
 module Maze exposing
     ( Coordinates, Kind(..), Cell, Maze
     , empty, insert
-    , getChar, getKind
+    , getChar, getKind, getForkPath
     , Area, getArea
     , makeExit
     , Branch, addBranch, gotoForkAux, followExistingRoad, ForkContinuoation, getStart, gotoFork
@@ -25,7 +25,7 @@ module Maze exposing
 
 # Get
 
-@docs getChar, getKind
+@docs getChar, getKind, getForkPath
 
 
 # Area
@@ -162,12 +162,25 @@ getKind coordinates maze =
         |> Maybe.withDefault Wall
 
 
+{-| `Corrdinates`に格納された`Path`を取得する。
+デフォルト値は空リスト。
+-}
+getForkPath : Coordinates -> Maze -> Path
+getForkPath coordinates maze =
+    case getKind coordinates maze of
+        Fork path ->
+            path
+
+        _ ->
+            []
+
+
 
 -- AREA
 
 
 {-| 迷路の範囲を表す型。
-限界がないことをNothingで表す。
+限界がないことを`Nothing`で表す。
 -}
 type alias Area =
     { top : Maybe Int
@@ -179,16 +192,16 @@ type alias Area =
 
 {-| その迷路から、その迷路が含まれる範囲を返す。
 ただし、迷路の一番外側を一つだけ出口の開いた壁にしたいので、
-出口の座標を必ず(0, -1)とし、
-出口の一つ前の座標を(0, 0)であることを前提にして、
+出口の座標を必ず`(0, -1)`とし、
+出口の一つ前の座標を`(0, 0)`であることを前提にして、
 下限はこの出口を含まず計算する。
-迷路を作成する際は必ずbottom=0となるようなAreaを使うこと。
+迷路を作成する際は必ず`bottom=0`となるような`Area`を使うこと。
 
     迷
     路の中
     　　で
 
-のAreaを求めると
+の`Area`を求めると
 
     let
         maze =
@@ -278,9 +291,9 @@ toStream novel =
 `Fork [1]`となる。
 
 ただし、迷路の一番外側を一つだけ出口の開いた壁にしたいので、
-出口の座標を必ず(0, -1)とし、
-出口の一つ前の座標を(0, 0)にしている。
-この関数の引数のAreaは必ずbottom=0となるようなものを使うこと。
+出口の座標を必ず`(0, -1)`とし、
+出口の一つ前の座標を`(0, 0)`にしている。
+この関数の引数の`Area`は必ず`bottom=0`となるようなものを使うこと。
 
 -}
 makeExit : Chooser -> String -> Area -> Path -> Maze

@@ -392,7 +392,7 @@ mazeCoordinates coordinates maze =
             span [ class "start" ] [ charToText char ]
 
         Maze.Fork _ ->
-            span [ class "fork" ] [ charToText char ]
+            span [ class "fork" ] [ a [ href <| String.append "/?path=" <| Path.toString <| Maze.getForkPath coordinates maze ] [ charToText char ] ]
 
 
 charToText : Char -> Html msg
