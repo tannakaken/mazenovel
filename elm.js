@@ -6887,11 +6887,83 @@ var $author$project$Main$update = F2(
 				}
 			case 'UrlChanged':
 				var url = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{url: url}),
-					$elm$core$Platform$Cmd$none);
+				var _v2 = $author$project$Route$urlToRoute(url);
+				if (_v2.$ === 'Nothing') {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								state: $author$project$Main$Failure('お探しのページは見つかりませんでした。'),
+								url: url
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					var query = _v2.a.a;
+					var _v3 = _Utils_Tuple2(query.path, query.seed);
+					if (_v3.a.$ === 'Nothing') {
+						if (_v3.b.$ === 'Nothing') {
+							var _v4 = _v3.a;
+							var _v5 = _v3.b;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{seed: model.seed + 1, url: url}),
+								$elm$core$Platform$Cmd$none);
+						} else {
+							var _v8 = _v3.a;
+							var seed = _v3.b.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{seed: seed, url: url}),
+								$elm$core$Platform$Cmd$none);
+						}
+					} else {
+						if (_v3.b.$ === 'Nothing') {
+							var path = _v3.a.a;
+							var _v6 = _v3.b;
+							var _v7 = $author$project$Path$fromString(path);
+							if (_v7.$ === 'Nothing') {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											state: $author$project$Main$Failure($author$project$Main$pathNotFound),
+											url: url
+										}),
+									$elm$core$Platform$Cmd$none);
+							} else {
+								var pathList = _v7.a;
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{path: pathList, seed: model.seed + 1, url: url}),
+									$elm$core$Platform$Cmd$none);
+							}
+						} else {
+							var path = _v3.a.a;
+							var seed = _v3.b.a;
+							var _v9 = $author$project$Path$fromString(path);
+							if (_v9.$ === 'Nothing') {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{
+											state: $author$project$Main$Failure($author$project$Main$pathNotFound),
+											url: url
+										}),
+									$elm$core$Platform$Cmd$none);
+							} else {
+								var pathList = _v9.a;
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{path: pathList, seed: seed, url: url}),
+									$elm$core$Platform$Cmd$none);
+							}
+						}
+					}
+				}
 			case 'GotTime':
 				var posix = msg.a;
 				return _Utils_Tuple2(
@@ -6939,7 +7011,13 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$address = _VirtualDom_node('address');
 var $elm$html$Html$article = _VirtualDom_node('article');
+var $elm$html$Html$dd = _VirtualDom_node('dd');
+var $elm$html$Html$dl = _VirtualDom_node('dl');
+var $elm$html$Html$dt = _VirtualDom_node('dt');
+var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $author$project$Maze$Area = F4(
 	function (top, right, bottom, left) {
 		return {bottom: bottom, left: left, right: right, top: top};
@@ -6985,6 +7063,17 @@ var $author$project$Maze$getArea = function (maze) {
 		A4($author$project$Maze$Area, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing, $elm$core$Maybe$Nothing),
 		$elm$core$Dict$keys(maze));
 };
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$header = _VirtualDom_node('header');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$core$String$append = _String_append;
 var $elm$core$String$cons = _String_cons;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
@@ -7027,7 +7116,23 @@ var $author$project$Maze$getKind = F2(
 				},
 				A2($elm$core$Dict$get, coordinates, maze)));
 	});
+var $author$project$Maze$getForkPath = F2(
+	function (coordinates, maze) {
+		var _v0 = A2($author$project$Maze$getKind, coordinates, maze);
+		if (_v0.$ === 'Fork') {
+			var path = _v0.a;
+			return path;
+		} else {
+			return _List_Nil;
+		}
+	});
 var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$Path$toString = function (path) {
+	return A2(
+		$elm$core$String$join,
+		',',
+		A2($elm$core$List$map, $elm$core$String$fromInt, path));
+};
 var $author$project$Main$mazeCoordinates = F2(
 	function (coordinates, maze) {
 		var kind = A2($author$project$Maze$getKind, coordinates, maze);
@@ -7075,7 +7180,21 @@ var $author$project$Main$mazeCoordinates = F2(
 						]),
 					_List_fromArray(
 						[
-							$author$project$Main$charToText(_char)
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href(
+									A2(
+										$elm$core$String$append,
+										'/?path=',
+										$author$project$Path$toString(
+											A2($author$project$Maze$getForkPath, coordinates, maze))))
+								]),
+							_List_fromArray(
+								[
+									$author$project$Main$charToText(_char)
+								]))
 						]));
 		}
 	});
@@ -7158,6 +7277,7 @@ var $author$project$Main$mazeRows = F2(
 			A2($elm$core$Maybe$withDefault, 0, area.top) + 1,
 			_List_Nil);
 	});
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
 		return {$: 'Seed', a: a, b: b};
@@ -8235,12 +8355,6 @@ var $author$project$Maze$makeExit = F4(
 		}
 	});
 var $author$project$Path$toForks = A2($elm$core$Basics$composeR, $author$project$Path$throughList, $elm$core$Set$fromList);
-var $author$project$Path$toString = function (path) {
-	return A2(
-		$elm$core$String$join,
-		',',
-		A2($elm$core$List$map, $elm$core$String$fromInt, path));
-};
 var $author$project$Main$novelToMaze = F3(
 	function (random, novelTree, _v0) {
 		var novel = _v0.a;
@@ -8261,25 +8375,33 @@ var $author$project$Main$randomMaze = F2(
 			A2($author$project$Main$novelToMaze, random, novelTree),
 			A3($author$project$Novel$select, random, model.path, novelTree));
 	});
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
 };
-var $author$project$Util$seedUrl = F2(
-	function (seed, url) {
-		return $elm$core$String$concat(
+var $author$project$Util$urlForBookmark = F3(
+	function (seed, path, url) {
+		return $elm$core$List$isEmpty(path) ? $elm$core$String$concat(
 			_List_fromArray(
 				[
 					$author$project$Util$baseUrl(url),
 					'?seed=',
 					$elm$core$String$fromInt(seed)
+				])) : $elm$core$String$concat(
+			_List_fromArray(
+				[
+					$author$project$Util$baseUrl(url),
+					'?path=',
+					$author$project$Path$toString(path),
+					'&seed=',
+					$elm$core$String$fromInt(seed)
 				]));
 	});
 var $author$project$Main$seedLink = function (model) {
-	var link = A2($author$project$Util$seedUrl, model.seed, model.url);
+	var link = A3($author$project$Util$urlForBookmark, model.seed, model.path, model.url);
 	return A2(
 		$elm$html$Html$a,
 		_List_fromArray(
@@ -8291,6 +8413,8 @@ var $author$project$Main$seedLink = function (model) {
 				$elm$html$Html$text(link)
 			]));
 };
+var $elm$html$Html$time = _VirtualDom_node('time');
+var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$Main$randomMazeHtml = F2(
 	function (model, novelTree) {
 		var _v0 = A2($author$project$Main$randomMaze, model, novelTree);
@@ -8319,6 +8443,95 @@ var $author$project$Main$randomMazeHtml = F2(
 				_List_fromArray(
 					[
 						A2(
+						$elm$html$Html$header,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('header')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$h1,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('迷路小説')
+									])),
+								A2(
+								$elm$html$Html$ul,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$id('link')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('http://blog.livedoor.jp/kensaku_gokuraku/')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('ブログ')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('https://twitter.com/tannakaken//')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Twitter')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('https://tannakaken.xyz/gallery/')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('ギャラリー')
+													]))
+											])),
+										A2(
+										$elm$html$Html$li,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('https://gallery.tannakaken.xyz/feedback/')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('フィードバック')
+													]))
+											]))
+									]))
+							])),
+						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
@@ -8329,22 +8542,186 @@ var $author$project$Main$randomMazeHtml = F2(
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('path')
+								$elm$html$Html$Attributes$class('bookmark')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(pathString)
+								A2(
+								$elm$html$Html$p,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('ブックマーク用URL:'),
+										$author$project$Main$seedLink(model)
+									]))
 							])),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('seed')
+								$elm$html$Html$Attributes$class('explain')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('ブックマーク用URL:'),
-								$author$project$Main$seedLink(model)
+								A2(
+								$elm$html$Html$p,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('リロードするたびに迷路は再生成されます。お気に入りの迷路が現れた場合は、このブックマーク用のURLをクリックしてからブックマークしてください。')
+									])),
+								A2(
+								$elm$html$Html$p,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('分かれ道や行き止まりはリンクになっています。クリックすると、その分岐がゴールへと繋がる迷路が生成されます。')
+									])),
+								A2(
+								$elm$html$Html$p,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('迷路の生成に時間がかかる場合がありますので、お待ちください。')
+									])),
+								A2(
+								$elm$html$Html$p,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('このページは迷路自動生成アルゴリズムを読んで思いつきました。Elmのコードは'),
+										A2(
+										$elm$html$Html$a,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$href('https://github.com/tannakaken/mazenovel')
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text('github')
+											])),
+										$elm$html$Html$text('にあります。')
+									]))
+							])),
+						A2(
+						$elm$html$Html$footer,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('footer')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('作者:'),
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('https://tannakaken.xyz/')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('淡中 圏(Tannakian Cat)')
+													]))
+											])),
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('所属サークル:'),
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('https://forcing.nagoya/')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('The dark side of forcing')
+													]))
+											])),
+										A2(
+										$elm$html$Html$address,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('連絡先:'),
+												A2(
+												$elm$html$Html$a,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$href('mailto:tannakaken@gmail.com')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('tannakaken@gmail.com')
+													]))
+											]))
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$dl,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$id('document-history')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$dt,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$id('first-published')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('First Published:')
+													])),
+												A2(
+												$elm$html$Html$dd,
+												_List_Nil,
+												_List_fromArray(
+													[
+														A2(
+														$elm$html$Html$time,
+														_List_Nil,
+														_List_fromArray(
+															[
+																$elm$html$Html$text('14/06/2020 16:00:00')
+															]))
+													]))
+											]))
+									])),
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$id('copyleft')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$p,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text('@copyleft; All Wrongs Reversed')
+											]))
+									]))
 							]))
 					]));
 		}
