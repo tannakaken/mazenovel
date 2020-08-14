@@ -16,7 +16,7 @@ import Set
 import Task
 import Time
 import Url exposing (Url)
-import Util exposing (getNth, jsonUrl, seedUrl)
+import Util exposing (getNth, jsonUrl, urlForBookmark)
 
 
 
@@ -339,7 +339,7 @@ seedLink : Model -> Html msg
 seedLink model =
     let
         link =
-            seedUrl model.seed model.url
+            urlForBookmark model.seed model.path model.url
     in
     a [ href link ] [ text link ]
 

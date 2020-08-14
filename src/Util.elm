@@ -1,15 +1,17 @@
-module Util exposing (getNth, baseUrl, jsonUrl, seedUrl)
+module Util exposing (getNth, baseUrl, jsonUrl, urlForBookmark)
 
 {-| Utility関数モジュール。
 
 
 # Utility
 
-@docs getNth, baseUrl, jsonUrl, seedUrl
+@docs getNth, baseUrl, jsonUrl, urlForBookmark
 
 -}
 
 import Url exposing (Url)
+import Path exposing (Path)
+
 
 
 
@@ -85,15 +87,24 @@ jsonUrl url =
     baseUrl url ++ "tree.json"
 
 
-{-| 乱数のseedをクエリで指定したURL。
 
-    seedUrl 1
+{-| 乱数のseedと`Path`の情報をクエリで指定したURL。
+
+    urlForBookmark [] 1
         (Url.fromString
             "https://tannakaken.xyz/mazenovel/index.html"
         )
         == "https://tannakaken.xyz/mazenovel/?seed=1"
 
+    urlForBookmark [0, 1] 1
+        (Url.fromString
+            "https://tannakaken.xyz/mazenovel/index.html"
+        )
+        == "https://tannakaken.xyz/mazenovel/?path=0,1&seed=1"
+
 -}
-seedUrl : Int -> Url -> String
-seedUrl seed url =
-    String.concat [ baseUrl url, "?seed=", String.fromInt seed ]
+urlForBookmark : Int -> Path -> Url -> String
+urlForBookmark seed path url =
+    if List.isEmpty path
+    then String.concat [ baseUrl url, "?seed=", String.fromInt seed ]
+    else String.concat [ baseUrl url, "?path=", Path.toString path , "&seed=", String.fromInt seed]

@@ -53,26 +53,26 @@ suite =
                         |> Maybe.map Util.jsonUrl
                         |> Expect.equal (Just "https://tannakaken.xyz/mazenovel/tree.json")
             ]
-        , describe "Util.seedUrl"
+        , describe "Util.urlForBookmark"
             [ test "get seed url from local server" <|
                 \_ ->
                     Url.fromString "http://localhost:8000"
-                        |> Maybe.map (Util.seedUrl 1)
+                        |> Maybe.map (Util.urlForBookmark 1 [])
                         |> Expect.equal (Just "http://localhost:8000/?seed=1")
             , test "get seed url from local server with index.html" <|
                 \_ ->
                     Url.fromString "https://localhost:8000/index.html"
-                        |> Maybe.map (Util.seedUrl 2)
-                        |> Expect.equal (Just "https://localhost:8000/?seed=2")
+                        |> Maybe.map (Util.urlForBookmark 2 [1])
+                        |> Expect.equal (Just "https://localhost:8000/?path=1&seed=2")
             , test "get seed url from global server" <|
                 \_ ->
                     Url.fromString "http://tannakaken.xyz/mazenovel/"
-                        |> Maybe.map (Util.seedUrl 10)
-                        |> Expect.equal (Just "http://tannakaken.xyz/mazenovel/?seed=10")
+                        |> Maybe.map (Util.urlForBookmark 10 [1,2])
+                        |> Expect.equal (Just "http://tannakaken.xyz/mazenovel/?path=1,2&seed=10")
             , test "get seed url from global server with index.html" <|
                 \_ ->
                     Url.fromString "https://tannakaken.xyz/mazenovel/index.html"
-                        |> Maybe.map (Util.seedUrl 100)
+                        |> Maybe.map (Util.urlForBookmark 100 [])
                         |> Expect.equal (Just "https://tannakaken.xyz/mazenovel/?seed=100")
             ]
         ]
