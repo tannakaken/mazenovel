@@ -9,9 +9,8 @@ module Util exposing (getNth, baseUrl, jsonUrl, urlForBookmark)
 
 -}
 
-import Url exposing (Url)
 import Path exposing (Path)
-
+import Url exposing (Url)
 
 
 
@@ -87,16 +86,17 @@ jsonUrl url =
     baseUrl url ++ "tree.json"
 
 
-
 {-| 乱数のseedと`Path`の情報をクエリで指定したURL。
 
-    urlForBookmark [] 1
+    urlForBookmark []
+        1
         (Url.fromString
             "https://tannakaken.xyz/mazenovel/index.html"
         )
         == "https://tannakaken.xyz/mazenovel/?seed=1"
 
-    urlForBookmark [0, 1] 1
+    urlForBookmark [ 0, 1 ]
+        1
         (Url.fromString
             "https://tannakaken.xyz/mazenovel/index.html"
         )
@@ -105,6 +105,8 @@ jsonUrl url =
 -}
 urlForBookmark : Int -> Path -> Url -> String
 urlForBookmark seed path url =
-    if List.isEmpty path
-    then String.concat [ baseUrl url, "?seed=", String.fromInt seed ]
-    else String.concat [ baseUrl url, "?path=", Path.toString path , "&seed=", String.fromInt seed]
+    if List.isEmpty path then
+        String.concat [ baseUrl url, "?seed=", String.fromInt seed ]
+
+    else
+        String.concat [ baseUrl url, "?path=", Path.toString path, "&seed=", String.fromInt seed ]

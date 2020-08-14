@@ -62,12 +62,12 @@ suite =
             , test "get seed url from local server with index.html" <|
                 \_ ->
                     Url.fromString "https://localhost:8000/index.html"
-                        |> Maybe.map (Util.urlForBookmark 2 [1])
+                        |> Maybe.map (Util.urlForBookmark 2 [ 1 ])
                         |> Expect.equal (Just "https://localhost:8000/?path=1&seed=2")
             , test "get seed url from global server" <|
                 \_ ->
                     Url.fromString "http://tannakaken.xyz/mazenovel/"
-                        |> Maybe.map (Util.urlForBookmark 10 [1,2])
+                        |> Maybe.map (Util.urlForBookmark 10 [ 1, 2 ])
                         |> Expect.equal (Just "http://tannakaken.xyz/mazenovel/?path=1,2&seed=10")
             , test "get seed url from global server with index.html" <|
                 \_ ->

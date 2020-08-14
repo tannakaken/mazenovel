@@ -3,8 +3,8 @@ module Main exposing (main)
 import Array exposing (Array)
 import Browser
 import Browser.Navigation as Nav
-import Html exposing (Html, a, article, div, span, text)
-import Html.Attributes exposing (class, href)
+import Html exposing (Html, a, address, article, dd, div, dl, dt, footer, h1, header, li, p, span, text, time, ul)
+import Html.Attributes exposing (class, href, id)
 import Http
 import Json.Decode as JD exposing (Decoder)
 import Maze exposing (Area, Coordinates, Maze)
@@ -146,7 +146,33 @@ update msg model =
                     ( model, Nav.load href )
 
         UrlChanged url ->
-            ( { model | url = url }, Cmd.none )
+            case urlToRoute url of
+                Nothing ->
+                    ( { model | url = url, state = Failure "お探しのページは見つかりませんでした。" }, Cmd.none )
+
+                Just (Top query) ->
+                    case ( query.path, query.seed ) of
+                        ( Nothing, Nothing ) ->
+                            ( { model | url = url, seed = model.seed + 1 }, Cmd.none )
+
+                        ( Just path, Nothing ) ->
+                            case Path.fromString path of
+                                Nothing ->
+                                    ( { model | url = url, state = Failure pathNotFound }, Cmd.none )
+
+                                Just pathList ->
+                                    ( { model | url = url, path = pathList, seed = model.seed + 1 }, Cmd.none )
+
+                        ( Nothing, Just seed ) ->
+                            ( { model | url = url, seed = seed }, Cmd.none )
+
+                        ( Just path, Just seed ) ->
+                            case Path.fromString path of
+                                Nothing ->
+                                    ( { model | url = url, state = Failure pathNotFound }, Cmd.none )
+
+                                Just pathList ->
+                                    ( { model | url = url, path = pathList, seed = seed }, Cmd.none )
 
         GotTime posix ->
             ( { model | seed = Time.posixToMillis posix }
@@ -329,9 +355,42 @@ randomMazeHtml model novelTree =
                     Maze.getArea maze
             in
             article [ class "main" ]
-                [ div [ class "maze" ] <| mazeRows area maze
-                , div [ class "path" ] [ text pathString ]
-                , div [ class "seed" ] [ text "ブックマーク用URL:", seedLink model ]
+                [ header [ class "header" ]
+                    [ h1 [] [ text "迷路小説" ]
+                    , ul [ id "link" ]
+                        [ li [] [ a [ href "http://blog.livedoor.jp/kensaku_gokuraku/" ] [ text "ブログ" ] ]
+                        , li [] [ a [ href "https://twitter.com/tannakaken//" ] [ text "Twitter" ] ]
+                        , li [] [ a [ href "https://tannakaken.xyz/gallery/" ] [ text "ギャラリー" ] ]
+                        , li [] [ a [ href "https://gallery.tannakaken.xyz/feedback/" ] [ text "フィードバック" ] ]
+                        ]
+                    ]
+                , div [ class "maze" ] <| mazeRows area maze
+                , div [ class "bookmark" ] [ p [] [ text "ブックマーク用URL:", seedLink model ] ]
+                , div [ class "explain" ]
+                    [ p [] [ text "リロードするたびに迷路は再生成されます。お気に入りの迷路が現れた場合は、このブックマーク用のURLをクリックしてからブックマークしてください。" ]
+                    , p [] [ text "分かれ道や行き止まりはリンクになっています。クリックすると、その分岐がゴールへと繋がる迷路が生成されます。" ]
+                    , p [] [ text "迷路の生成に時間がかかる場合がありますので、お待ちください。" ]
+                    , p []
+                        [ text "このページは迷路自動生成アルゴリズムを読んで思いつきました。Elmのコードは"
+                        , a [ href "https://github.com/tannakaken/mazenovel" ] [ text "github" ]
+                        , text "にあります。"
+                        ]
+                    ]
+                , footer [ class "footer" ]
+                    [ div []
+                        [ p [] [ text "作者:", a [ href "https://tannakaken.xyz/" ] [ text "淡中 圏(Tannakian Cat)" ] ]
+                        , p [] [ text "所属サークル:", a [ href "https://forcing.nagoya/" ] [ text "The dark side of forcing" ] ]
+                        , address [] [ text "連絡先:", a [ href "mailto:tannakaken@gmail.com" ] [ text "tannakaken@gmail.com" ] ]
+                        ]
+                    , div []
+                        [ dl [ id "document-history" ]
+                            [ dt [ id "first-published" ] [ text "First Published:" ]
+                            , dd [] [ time [] [ text "14/06/2020 16:00:00" ] ]
+                            ]
+                        ]
+                    , div [ id "copyleft" ]
+                        [ p [] [ text "@copyleft; All Wrongs Reversed" ] ]
+                    ]
                 ]
 
 
