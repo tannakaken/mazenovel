@@ -11,7 +11,7 @@ all: main tree
 .PHONY: index
 main: public/elm.js
 public/elm.js: $(SRC)
-	npx elm make src/Main.elm --output public/elm.js
+	npx elm make src/Main.elm --optimize --output public/elm.js 
 
 .PHONY: tree
 tree: public/tree.json
