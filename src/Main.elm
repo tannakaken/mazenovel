@@ -385,7 +385,7 @@ randomMazeHtml model novelTree =
                     , div []
                         [ dl [ id "document-history" ]
                             [ dt [ id "first-published" ] [ text "First Published:" ]
-                            , dd [] [ time [] [ text "14/06/2020 16:00:00" ] ]
+                            , dd [] [ time [] [ text "12/05/2022 23:00:00" ] ]
                             ]
                         ]
                     , div [ id "copyleft" ]
