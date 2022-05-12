@@ -1,6 +1,7 @@
 node_modules/
 elm-stuff/
-public/elm.js
+public/elm.min.js
 public/tree.json
 .DS_Store
 *.swp
+*.log

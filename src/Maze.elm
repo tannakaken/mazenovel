@@ -347,7 +347,8 @@ makeExitAux chooser stream area exclusion coordinates maze =
                他の道を選んでも行き止まりの可能性が高いので定数だけ逆戻りする。
             -}
             Nothing ->
-                BackTrack 10
+                {- 実験した結果ここくらいの数字が良いようだ -}
+                BackTrack 30
 
             {- 試しに選んだ道を伸ばしてみる。 -}
             Just ( nextCoordinates, nextChooser ) ->
